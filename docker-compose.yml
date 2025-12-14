@@ -1,0 +1,76 @@
+services:
+  # Веб-інтерфейс конкурентної розвідки
+  intelligence-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: competitive-intelligence-web
+    restart: unless-stopped
+    environment:
+      - SELENIUM_HUB_URL=${SELENIUM_HUB_URL:-http://selenium-hub:4444/wd/hub}
+      - DATABASE_PATH=${DATABASE_PATH:-/data/competitive_intelligence.db}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://ollama:11434}
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/data
+      - ./exports:/app/exports
+      - ./logs:/app/logs
+    networks:
+      - selenium-grid
+    depends_on:
+      - selenium-hub
+    command: python src/web/app.py
+
+  # Ollama для LLM аналізу (опціонально)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-intelligence
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - selenium-grid
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # Cron для автоматичного сканування
+  intelligence-cron:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: competitive-intelligence-cron
+    restart: unless-stopped
+    environment:
+      - SELENIUM_HUB_URL=${SELENIUM_HUB_URL:-http://selenium-hub:4444/wd/hub}
+      - DATABASE_PATH=${DATABASE_PATH:-/data/competitive_intelligence.db}
+    volumes:
+      - ./data:/data
+      - ./exports:/app/exports
+      - ./logs:/app/logs
+    networks:
+      - selenium-grid
+    depends_on:
+      - selenium-hub
+    command: >
+      sh -c "
+      echo '0 3 * * * root cd /app && python run_intelligence.py --full --silent' > /etc/cron.d/intelligence &&
+      chmod 0644 /etc/cron.d/intelligence &&
+      crontab /etc/cron.d/intelligence &&
+      cron -f
+      "
+
+volumes:
+  ollama-data:
+
+networks:
+  selenium-grid:
+    name: selenium-grid
+    driver: bridge

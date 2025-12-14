@@ -1,0 +1,129 @@
+# Конфігурація інструменту конкурентної розвідки
+
+# Selenium Grid налаштування
+selenium_grid:
+  hub_url: "http://192.168.1.10:4444/wd/hub"
+  browser: "chrome"
+  headless: true
+  mode: "requests"  # remote | local | requests
+  requests_fallback: true
+  implicit_wait: 10
+  page_load_timeout: 30
+  screenshot_on_error: true
+
+# Цілі для аналізу (конкуренти)
+targets:
+  - name: "Competitor 1"
+    url: "https://example-competitor1.com"
+    enabled: true
+    priority: 1
+    
+  - name: "Competitor 2"
+    url: "https://example-competitor2.com"
+    enabled: true
+    priority: 2
+
+# Модулі збору даних
+modules:
+  seo:
+    enabled: true
+    collect_meta_tags: true
+    collect_headings: true
+    collect_robots_txt: true
+    collect_sitemap: true
+    collect_structured_data: true
+    
+  company:
+    enabled: true
+    collect_emails: true
+    collect_phones: true
+    collect_addresses: true
+    collect_social_media: true
+    
+  products:
+    enabled: true
+    max_products_per_site: 1000
+    collect_prices: true
+    collect_images: true
+    collect_descriptions: true
+    
+  promotions:
+    enabled: true
+    keywords:
+      - "знижка"
+      - "акція"
+      - "розпродаж"
+      - "sale"
+      - "discount"
+      - "promotion"
+
+# База даних
+database:
+  type: "sqlite"
+  path: "data/competitive_intelligence.db"
+  backup_enabled: true
+  backup_frequency: "daily"
+
+# Ollama LLM
+ollama:
+  enabled: true
+  model: "llama3.2"
+  host: "http://localhost:11434"
+  temperature: 0.7
+  analysis_types:
+    - "competitor_analysis"
+    - "recommendations"
+    - "trend_detection"
+    - "pricing_strategy"
+
+# Веб-інтерфейс
+web:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  
+# Експорт даних
+export:
+  formats:
+    - "json"
+    - "excel"
+    - "csv"
+  output_directory: "exports/"
+
+# Планування завдань
+scheduling:
+  enabled: false
+  full_scan_cron: "0 3 * * *"  # Щодня о 3:00
+  quick_scan_cron: "0 */6 * * *"  # Кожні 6 годин
+
+# Логування
+logging:
+  level: "INFO"
+  file: "logs/intelligence.log"
+  console: true
+  max_size_mb: 50
+  backup_count: 5
+
+# Налаштування збору
+scraping:
+  parallel_workers: 3
+  retry_attempts: 3
+  retry_delay: 5
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  request_timeout: 30
+  respect_robots_txt: true
+  
+# Повідомлення та алерти
+notifications:
+  enabled: false
+  telegram:
+    enabled: false
+    bot_token: ""
+    chat_id: ""
+  email:
+    enabled: false
+    smtp_server: ""
+    smtp_port: 587
+    username: ""
+    password: ""
+    recipients: []

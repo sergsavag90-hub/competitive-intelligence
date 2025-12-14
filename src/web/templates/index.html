@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competitive Intelligence Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .stat-card h3 {
+            font-size: 1em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        
+        .competitors-list {
+            margin-top: 30px;
+        }
+        
+        .competitor-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s;
+        }
+        
+        .competitor-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .competitor-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .competitor-url {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        
+        .competitor-stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕵️ Competitive Intelligence Dashboard</h1>
+        
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>Всього конкурентів</h3>
+                <div class="value" id="totalCompetitors">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Товарів відстежується</h3>
+                <div class="value" id="totalProducts">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Активних акцій</h3>
+                <div class="value" id="totalPromotions">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Останнє оновлення</h3>
+                <div class="value" id="lastUpdate" style="font-size: 1.2em;">-</div>
+            </div>
+        </div>
+        
+        <div class="competitors-list">
+            <h2>Конкуренти</h2>
+            <div id="competitorsList" class="loading">Завантаження...</div>
+        </div>
+    </div>
+    
+    <script>
+        async function loadData() {
+            try {
+                const response = await fetch('/api/competitors');
+                const competitors = await response.json();
+                
+                let totalProducts = 0;
+                let totalPromotions = 0;
+                
+                competitors.forEach(comp => {
+                    totalProducts += comp.stats.total_products || 0;
+                    totalPromotions += comp.stats.total_promotions || 0;
+                });
+                
+                document.getElementById('totalCompetitors').textContent = competitors.length;
+                document.getElementById('totalProducts').textContent = totalProducts;
+                document.getElementById('totalPromotions').textContent = totalPromotions;
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleDateString('uk-UA');
+                
+                const listHtml = competitors.map(comp => `
+                    <div class="competitor-card">
+                        <div class="competitor-name">${comp.name}</div>
+                        <a href="${comp.url}" target="_blank" class="competitor-url">${comp.url}</a>
+                        <div class="competitor-stats">
+                            <div class="stat-item">
+                                <span class="badge">🛒 ${comp.stats.total_products || 0} товарів</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="badge">🎁 ${comp.stats.total_promotions || 0} акцій</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="badge">${comp.stats.has_seo_data ? '✓ SEO' : '✗ SEO'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById('competitorsList').innerHTML = listHtml || '<div class="loading">Даних ще немає</div>';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('competitorsList').innerHTML = 
+                    '<div class="loading">Помилка завантаження даних</div>';
+            }
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>
