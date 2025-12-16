@@ -233,8 +233,8 @@ GRID_MAX_SESSION=15
 DATABASE_PATH=/data/competitive_intelligence.db
 
 # Ollama LLM
-OLLAMA_HOST=http://ollama:11434
-OLLAMA_MODEL=llama3.2
+OLLAMA_HOST=http://192.168.1.220:11434
+OLLAMA_MODEL=gemma3:4b
 
 # Web Interface
 WEB_HOST=0.0.0.0
