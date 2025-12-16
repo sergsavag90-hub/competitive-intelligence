@@ -1,0 +1,293 @@
+version: '3.8'
+
+##############################################################################
+# Docker Compose для Proxmox архітектури
+# Кожен браузер у окремому контейнері для легкого масштабування
+##############################################################################
+
+services:
+  # Selenium Hub - центральний координатор
+  selenium-hub:
+    image: selenium/hub:4.26.0
+    container_name: selenium-hub
+    restart: unless-stopped
+    ports:
+      - "4444:4444"
+      - "4442:4442"
+      - "4443:4443"
+    environment:
+      - SE_SESSION_TIMEOUT=300
+      - SE_NODE_MAX_SESSIONS=5
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_ROUTER_SESSION_TIMEOUT=300
+      - GRID_MAX_SESSION=10
+      - GRID_BROWSER_TIMEOUT=300
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - selenium-grid
+    labels:
+      - "com.proxmox.service=selenium-hub"
+      - "com.proxmox.description=Selenium Grid Hub"
+
+  # Chrome Browser Node 1
+  chrome-node-1:
+    image: selenium/node-chrome:4.26.0
+    container_name: selenium-chrome-1
+    restart: unless-stopped
+    shm_size: 2gb
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_NODE_GRID_URL=http://selenium-hub:4444
+    ports:
+      - "7901:7900"  # VNC port
+      - "5901:5900"  # noVNC port
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - selenium-grid
+    labels:
+      - "com.proxmox.service=chrome-node"
+      - "com.proxmox.node_id=1"
+      - "com.proxmox.browser=chrome"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Chrome Browser Node 2
+  chrome-node-2:
+    image: selenium/node-chrome:4.26.0
+    container_name: selenium-chrome-2
+    restart: unless-stopped
+    shm_size: 2gb
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_NODE_GRID_URL=http://selenium-hub:4444
+    ports:
+      - "7902:7900"
+      - "5902:5900"
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - selenium-grid
+    labels:
+      - "com.proxmox.service=chrome-node"
+      - "com.proxmox.node_id=2"
+      - "com.proxmox.browser=chrome"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Firefox Browser Node 1
+  firefox-node-1:
+    image: selenium/node-firefox:4.26.0
+    container_name: selenium-firefox-1
+    restart: unless-stopped
+    shm_size: 2gb
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_NODE_GRID_URL=http://selenium-hub:4444
+    ports:
+      - "7903:7900"
+      - "5903:5900"
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - selenium-grid
+    labels:
+      - "com.proxmox.service=firefox-node"
+      - "com.proxmox.node_id=1"
+      - "com.proxmox.browser=firefox"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Edge Browser Node 1
+  edge-node-1:
+    image: selenium/node-edge:4.26.0
+    container_name: selenium-edge-1
+    restart: unless-stopped
+    shm_size: 2gb
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=3
+      - SE_NODE_SESSION_TIMEOUT=300
+      - SE_VNC_NO_PASSWORD=1
+      - SE_SCREEN_WIDTH=1920
+      - SE_SCREEN_HEIGHT=1080
+      - SE_NODE_GRID_URL=http://selenium-hub:4444
+    ports:
+      - "7904:7900"
+      - "5904:5900"
+    volumes:
+      - /dev/shm:/dev/shm
+    networks:
+      - selenium-grid
+    labels:
+      - "com.proxmox.service=edge-node"
+      - "com.proxmox.node_id=1"
+      - "com.proxmox.browser=edge"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Веб-інтерфейс конкурентної розвідки
+  intelligence-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: competitive-intelligence-web
+    restart: unless-stopped
+    environment:
+      - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
+      - DATABASE_PATH=/data/competitive_intelligence.db
+      - OLLAMA_HOST=http://ollama:11434
+      - WEB_HOST=0.0.0.0
+      - WEB_PORT=5000
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/data
+      - ./exports:/app/exports
+      - ./logs:/app/logs
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - selenium-grid
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    command: python src/web/app.py
+    labels:
+      - "com.proxmox.service=intelligence-web"
+      - "com.proxmox.description=Competitive Intelligence Web Interface"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Ollama для LLM аналізу (опціонально)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-intelligence
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - selenium-grid
+    labels:
+      - "com.proxmox.service=ollama"
+      - "com.proxmox.description=LLM Analysis Engine"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+
+  # Worker для фонових завдань
+  intelligence-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: competitive-intelligence-worker
+    restart: unless-stopped
+    environment:
+      - SELENIUM_HUB_URL=http://selenium-hub:4444/wd/hub
+      - DATABASE_PATH=/data/competitive_intelligence.db
+      - OLLAMA_HOST=http://ollama:11434
+    volumes:
+      - ./data:/data
+      - ./exports:/app/exports
+      - ./logs:/app/logs
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - selenium-grid
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+    command: python run_intelligence.py --daemon
+    labels:
+      - "com.proxmox.service=intelligence-worker"
+      - "com.proxmox.description=Background Intelligence Worker"
+
+volumes:
+  ollama-data:
+    driver: local
+    labels:
+      - "com.proxmox.volume=ollama-data"
+
+networks:
+  selenium-grid:
+    name: selenium-grid
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+    labels:
+      - "com.proxmox.network=selenium-grid"
