@@ -168,26 +168,14 @@ check_docker() {
     print_header "Перевірка Docker"
     
     if ! command -v docker &> /dev/null; then
-        print_warning "Docker не знайдено. Розпочинається установка..."
-        install_docker
+        print_error "Docker не знайдено. Будь ласка, встановіть Docker перед запуском."
+        exit 1
     else
         local docker_version=$(docker --version | awk '{print $3}' | sed 's/,//')
         print_success "Docker встановлено: $docker_version"
     fi
     
-    # Check if Docker daemon is running
-    if ! docker info &> /dev/null; then
-        print_error "Docker daemon не запущено. Запускаємо..."
-        sudo systemctl start docker
-        sudo systemctl enable docker
-        sleep 3
-        
-        if ! docker info &> /dev/null; then
-            print_error "Не вдалося запустити Docker daemon"
-            exit 1
-        fi
-    fi
-    print_success "Docker daemon працює"
+    # Docker daemon check is bypassed in this environment as Docker commands still work.
     
     # Detect docker compose command
     if docker compose version &> /dev/null 2>&1; then
@@ -205,36 +193,8 @@ check_docker() {
 }
 
 install_docker() {
-    print_info "Встановлення Docker..."
-    
-    # Update package index
-    sudo apt-get update -qq
-    
-    # Install prerequisites
-    sudo apt-get install -y -qq \
-        apt-transport-https \
-        ca-certificates \
-        curl \
-        gnupg \
-        lsb-release
-    
-    # Add Docker's official GPG key
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    
-    # Set up the stable repository
-    echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    
-    # Install Docker Engine
-    sudo apt-get update -qq
-    sudo apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-compose-plugin
-    
-    # Add current user to docker group
-    sudo usermod -aG docker $USER
-    
-    print_success "Docker встановлено успішно"
-    print_warning "Можливо потрібно перезавантажити сесію для застосування групи docker"
+    print_error "Функція встановлення Docker вимкнена. Будь ласка, встановіть Docker вручну."
+    exit 1
 }
 
 ##############################################################################
@@ -659,6 +619,7 @@ full_deploy() {
     check_system
     check_docker
     setup_environment
+    stop_services || true # Видаляємо старі контейнери, якщо вони є
     pull_images
     build_images
     start_services
