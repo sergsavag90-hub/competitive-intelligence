@@ -28,7 +28,7 @@ VMID="${1:-}"
 HOSTNAME="${2:-competitive-intelligence}"
 IP_ADDRESS="${3:-dhcp}"
 GATEWAY="${4:-192.168.1.1}"
-TEMPLATE="ubuntu-22.04-standard"
+TEMPLATE="ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
 STORAGE="local-lvm"
 CORES=4
 MEMORY=8192
@@ -136,7 +136,7 @@ create_container() {
     fi
     
     # Create container
-    pct create "$VMID" "$STORAGE:vztmpl/$TEMPLATE-amd64.tar.zst" \
+    pct create "$VMID" "$STORAGE:vztmpl/$TEMPLATE" \
         --hostname "$HOSTNAME" \
         --cores "$CORES" \
         --memory "$MEMORY" \
