@@ -229,6 +229,44 @@ install_docker() {
     '
     
     print_success "Docker встановлено"
+    
+    # Fix AppArmor for Docker in LXC
+    print_info "Налаштування Docker для LXC (вимкнення AppArmor)..."
+    pct exec "$VMID" -- bash -c '
+        # Create Docker daemon config
+        mkdir -p /etc/docker
+        cat > /etc/docker/daemon.json << "DOCKEREOF"
+{
+  "storage-driver": "overlay2",
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Hard": 64000,
+      "Soft": 64000
+    }
+  },
+  "security-opts": [
+    "apparmor=unconfined"
+  ]
+}
+DOCKEREOF
+        
+        # Restart Docker to apply changes
+        systemctl restart docker
+        
+        # Wait for Docker to be ready
+        sleep 3
+        
+        # Verify Docker works
+        docker run --rm hello-world > /dev/null 2>&1 || echo "Docker verification may need manual check"
+    '
+    
+    print_success "Docker налаштовано для роботи в LXC"
 }
 
 install_project() {

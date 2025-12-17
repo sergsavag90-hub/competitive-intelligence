@@ -212,6 +212,29 @@ apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 # Перевірте установку
 docker --version
 docker compose version
+
+# ВАЖЛИВО! Виправте AppArmor для Docker в LXC
+# Цей крок обов'язковий для роботи Docker всередині LXC контейнера
+cd /opt/competitive-intelligence
+./fix-docker-apparmor.sh
+```
+
+**Примітка:** Якщо ви ще не завантажили проект, створіть тимчасову конфігурацію Docker:
+
+```bash
+# Альтернативний спосіб (без скрипта)
+mkdir -p /etc/docker
+cat > /etc/docker/daemon.json << 'EOF'
+{
+  "storage-driver": "overlay2",
+  "security-opts": [
+    "apparmor=unconfined"
+  ]
+}
+EOF
+
+systemctl restart docker
+docker run --rm hello-world  # Перевірка
 ```
 
 ### Крок 5: Завантаження проекту
@@ -546,6 +569,73 @@ pct reboot 100
 systemctl status docker
 journalctl -u docker -f
 ```
+
+### Проблема: AppArmor помилка при збірці Docker образів
+
+**Симптоми:**
+```
+ERROR: process "/bin/sh -c apt-get update..." did not complete successfully
+runc run failed: unable to apply apparmor profile: apparmor failed to apply profile
+write fsmount:fscontext:proc/thread-self/attr/apparmor/exec: no such file or directory
+```
+
+**Рішення:**
+
+Ця помилка виникає тому, що Docker намагається використовувати AppArmor всередині LXC контейнера, де AppArmor не доступний.
+
+**Варіант 1: Автоматичне виправлення (рекомендовано)**
+
+```bash
+# В LXC контейнері
+cd /opt/competitive-intelligence
+./fix-docker-apparmor.sh
+```
+
+**Варіант 2: Ручне виправлення**
+
+```bash
+# Створіть або відредагуйте /etc/docker/daemon.json
+mkdir -p /etc/docker
+cat > /etc/docker/daemon.json << 'EOF'
+{
+  "storage-driver": "overlay2",
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "security-opts": [
+    "apparmor=unconfined"
+  ]
+}
+EOF
+
+# Перезапустіть Docker
+systemctl restart docker
+
+# Перевірте що працює
+docker run --rm hello-world
+docker build -t test - <<< "FROM alpine:latest"
+docker rmi test
+```
+
+**Перевірка:**
+
+```bash
+# Перевірте конфігурацію Docker
+docker info | grep -i security
+
+# Має показати: Security Options: apparmor=unconfined
+
+# Спробуйте зібрати образ
+cd /opt/competitive-intelligence
+docker compose -f docker-compose.proxmox.yml build --no-cache
+```
+
+**ВАЖЛИВО:** 
+- Ця конфігурація безпечна тільки для LXC контейнерів
+- НЕ вимикайте AppArmor на хост-системі Proxmox
+- Docker всередині LXC все ще ізольований контейнером
 
 ---
 
