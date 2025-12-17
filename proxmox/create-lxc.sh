@@ -28,7 +28,7 @@ VMID="${1:-}"
 HOSTNAME="${2:-competitive-intelligence}"
 IP_ADDRESS="${3:-dhcp}"
 GATEWAY="${4:-192.168.1.1}"
-TEMPLATE="ubuntu-24.04-standard"
+TEMPLATE="local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
 STORAGE="local-lvm"
 CORES=4
 MEMORY=8192
@@ -108,13 +108,11 @@ check_vmid() {
 check_template() {
     print_info "Перевірка наявності template..."
     
-    # List available templates
-    local templates=$(pveam available | grep "$TEMPLATE" || true)
-    
-    if [[ -z "$templates" ]]; then
-        print_warning "Template $TEMPLATE не знайдено"
+    # Check if template exists in local storage
+    if ! pvesm list local | grep -q "ubuntu-24.04-standard_24.04-2_amd64.tar.zst"; then
+        print_warning "Template ubuntu-24.04-standard не знайдено"
         print_info "Завантаження template..."
-        pveam download local "$TEMPLATE-amd64.tar.zst"
+        pveam download local ubuntu-24.04-standard_24.04-2_amd64.tar.zst
     fi
     
     print_success "Template готовий"
@@ -136,7 +134,7 @@ create_container() {
     fi
     
     # Create container
-    pct create "$VMID" "$STORAGE:vztmpl/$TEMPLATE" \
+    pct create "$VMID" "$TEMPLATE" \
         --hostname "$HOSTNAME" \
         --cores "$CORES" \
         --memory "$MEMORY" \
