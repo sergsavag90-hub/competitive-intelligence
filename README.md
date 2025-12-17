@@ -126,6 +126,10 @@ cd /opt/competitive-intelligence
 git clone <your-repo> .
 
 # 4. Запустіть автоматичний deployment
+
+> **Примітка:** Скрипт `deploy.sh` тепер містить логіку для **автоматичного очищення** старих контейнерів перед запуском, що запобігає помилкам конфлікту імен (`Conflict. The container name is already in use`).
+
+
 ./deploy.sh
 
 # Готово! Сервіси доступні через 5-10 хвилин
