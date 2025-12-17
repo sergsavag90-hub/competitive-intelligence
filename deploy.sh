@@ -295,6 +295,10 @@ build_images() {
 start_services() {
     print_header "Запуск сервісів"
     
+    # Примусове видалення старих контейнерів, щоб уникнути конфлікту імен
+    print_info "Очищення старих контейнерів (якщо існують)..."
+    $DOCKER_COMPOSE_CMD -f "$COMPOSE_FILE" down --remove-orphans > /dev/null 2>&1 || true
+    
     print_info "Запуск контейнерів..."
     if $DOCKER_COMPOSE_CMD -f "$COMPOSE_FILE" up -d 2>&1 | tee -a "$LOG_FILE"; then
         print_success "Контейнери запущено"
