@@ -9,8 +9,10 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
+from threading import Thread
+from uuid import uuid4
 
 # Ensure the project root is importable when running inside Docker
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -19,6 +21,7 @@ if str(ROOT_DIR) not in sys.path:
 
 from src.database.db_manager import DatabaseManager  # noqa: E402
 from src.utils.config import config  # noqa: E402
+from run_intelligence import CompetitiveIntelligence  # noqa: E402
 
 app = Flask(__name__)
 CORS(app)
@@ -27,6 +30,7 @@ logging.basicConfig(level=getattr(logging, config.log_level.upper(), logging.INF
 logger = logging.getLogger(__name__)
 
 db = DatabaseManager()
+scan_jobs: Dict[str, Dict[str, Any]] = {}
 
 
 def serialize_stats(stats: Dict[str, Any]) -> Dict[str, Any]:
@@ -158,6 +162,55 @@ def get_promotions(competitor_id: int):
         'end_date': promo.end_date.isoformat() if promo.end_date else None,
     } for promo in promotions]
     return jsonify(data)
+
+def _run_scan_job(job_id: str, url: str, scan_type: str) -> None:
+    """Execute scan in background thread."""
+    logger.info("Початок сканування %s (%s)", url, scan_type)
+    scan_jobs[job_id] = {'status': 'running'}
+    ci = CompetitiveIntelligence()
+    results: Dict[str, Any] = {}
+    try:
+        if scan_type in ('seo', 'full'):
+            results['seo'] = ci.run_seo_analysis(url)
+        if scan_type in ('company', 'full'):
+            results['company'] = ci.run_company_analysis(url)
+        if scan_type in ('products', 'full'):
+            results['products'] = ci.run_product_analysis(url)
+        if scan_type in ('promotions', 'full'):
+            results['promotions'] = ci.run_promotion_analysis(url)
+        scan_jobs[job_id] = {'status': 'completed', 'result': results}
+        logger.info("Сканування %s завершено", url)
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.exception("Помилка сканування %s", url)
+        scan_jobs[job_id] = {'status': 'failed', 'error': str(exc)}
+
+@app.route('/api/scan', methods=['POST'])
+def trigger_scan():
+    """Start new scan job."""
+    payload = request.get_json(force=True) or {}
+    url = (payload.get('url') or '').strip()
+    scan_type = (payload.get('scan_type') or 'full').lower()
+    allowed = {'full', 'seo', 'company', 'products', 'promotions'}
+
+    if not url:
+        return jsonify({'error': 'URL обов\'язковий'}), 400
+    if scan_type not in allowed:
+        return jsonify({'error': 'Невідомий тип сканування'}), 400
+
+    job_id = str(uuid4())
+    scan_jobs[job_id] = {'status': 'queued'}
+    thread = Thread(target=_run_scan_job, args=(job_id, url, scan_type), daemon=True)
+    thread.start()
+
+    return jsonify({'job_id': job_id})
+
+@app.route('/api/scan/<job_id>')
+def scan_status(job_id: str):
+    """Return status/result for scan job."""
+    job = scan_jobs.get(job_id)
+    if not job:
+        return jsonify({'error': 'Не знайдено'}), 404
+    return jsonify(job)
 
 
 if __name__ == '__main__':
