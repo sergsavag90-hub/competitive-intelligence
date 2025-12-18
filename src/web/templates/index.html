@@ -135,6 +135,42 @@
         .competitors-list {
             margin-top: 30px;
         }
+
+        .vnc-grid {
+            margin-top: 40px;
+        }
+
+        .vnc-grid h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .vnc-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .vnc-card {
+            background: #f0f2ff;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .vnc-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: #444;
+        }
+
+        .vnc-frame {
+            width: 100%;
+            height: 200px;
+            border: none;
+            border-radius: 10px;
+            background: #fff;
+        }
         
         .competitor-card {
             background: #f8f9fa;
@@ -241,6 +277,28 @@
             <h2>Конкуренти</h2>
             <div id="competitorsList" class="loading">Завантаження...</div>
         </div>
+
+        <div class="vnc-grid">
+            <h2>Live VNC Streams</h2>
+            <div class="vnc-cards">
+                <div class="vnc-card">
+                    <h3>Chrome Node 1 (VNC)</h3>
+                    <iframe id="vnc-chrome-1" class="vnc-frame" src=""></iframe>
+                </div>
+                <div class="vnc-card">
+                    <h3>Chrome Node 2 (VNC)</h3>
+                    <iframe id="vnc-chrome-2" class="vnc-frame" src=""></iframe>
+                </div>
+                <div class="vnc-card">
+                    <h3>Firefox Node (VNC)</h3>
+                    <iframe id="vnc-firefox-1" class="vnc-frame" src=""></iframe>
+                </div>
+                <div class="vnc-card">
+                    <h3>Edge Node (VNC)</h3>
+                    <iframe id="vnc-edge-1" class="vnc-frame" src=""></iframe>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script>
@@ -290,6 +348,7 @@
         }
         
         loadData();
+        populateVncFrames();
         
         const scanForm = document.getElementById('scanForm');
         if (scanForm) {
@@ -375,6 +434,23 @@
                 }
             }
             checkStatus();
+        }
+
+        function populateVncFrames() {
+            const host = window.location.hostname || 'localhost';
+            const mappings = [
+                { id: 'vnc-chrome-1', port: 7901 },
+                { id: 'vnc-chrome-2', port: 7902 },
+                { id: 'vnc-firefox-1', port: 7903 },
+                { id: 'vnc-edge-1', port: 7904 }
+            ];
+
+            mappings.forEach(({ id, port }) => {
+                const frame = document.getElementById(id);
+                if (frame) {
+                    frame.src = `http://${host}:${port}`;
+                }
+            });
         }
     </script>
 </body>
