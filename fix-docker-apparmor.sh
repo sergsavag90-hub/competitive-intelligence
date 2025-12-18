@@ -1,10 +1,11 @@
 #!/bin/bash
 
 ##############################################################################
-# fix-docker-apparmor.sh - Виправлення AppArmor для Docker в LXC
+# fix-docker-apparmor.sh - Виправлення конфігурації Docker в LXC
 #
-# Цей скрипт вимикає AppArmor для Docker, що дозволяє йому працювати
-# всередині LXC контейнера в Proxmox
+# Скрипт прибирає застарілий параметр security-opts із daemon.json
+# і повертає робочу конфігурацію Docker усередині LXC контейнера.
+# Для вимкнення AppArmor потрібно налаштувати Proxmox (lxc.apparmor.profile).
 #
 # Використання:
 #   ./fix-docker-apparmor.sh
@@ -96,7 +97,7 @@ configure_docker() {
     mkdir -p /etc/docker
     
     # Create or update daemon.json
-    print_info "Створення /etc/docker/daemon.json з вимкненим AppArmor..."
+    print_info "Створення /etc/docker/daemon.json без security-opts..."
     
     cat > /etc/docker/daemon.json << 'EOF'
 {
@@ -112,10 +113,7 @@ configure_docker() {
       "Hard": 64000,
       "Soft": 64000
     }
-  },
-  "security-opts": [
-    "apparmor=unconfined"
-  ]
+  }
 }
 EOF
     
@@ -196,9 +194,9 @@ show_info() {
     echo ""
     
     echo -e "${BLUE}📋 Що було зроблено:${NC}"
-    echo "  • Вимкнено AppArmor для Docker"
+    echo "  • Видалено некоректний блок security-opts"
     echo "  • Налаштовано storage driver: overlay2"
-    echo "  • Налаштовано логування"
+    echo "  • Включено логування json-file з ротацією"
     echo "  • Збільшено ліміти файлових дескрипторів"
     echo ""
     
@@ -208,17 +206,20 @@ show_info() {
     echo ""
     
     echo -e "${BLUE}✅ Наступні кроки:${NC}"
-    echo "  1. Запустіть deployment:"
+    echo "  1. Якщо потрібно повністю відключити AppArmor, додайте"
+    echo "     'lxc.apparmor.profile: unconfined' у конфіг контейнера на Proxmox."
+    echo "  2. Перезапустіть контейнер після зміни конфігурації на хості."
+    echo "  3. Запустіть deployment:"
     echo "     cd /opt/competitive-intelligence"
     echo "     ./deploy.sh"
     echo ""
-    echo "  2. Або використайте docker compose:"
+    echo "  4. Або використайте docker compose:"
     echo "     docker compose -f docker-compose.proxmox.yml up -d"
     echo ""
     
     echo -e "${YELLOW}⚠ Важливо:${NC}"
-    echo "  • Цю конфігурацію потрібно застосовувати лише в LXC контейнерах"
-    echo "  • На хост-системі Proxmox AppArmor НЕ слід вимикати"
+    echo "  • Цю конфігурацію застосовуйте лише в LXC контейнерах"
+    echo "  • AppArmor вимикається на рівні Proxmox, а не через security-opts"
     echo "  • Регулярно робіть backup даних"
     echo ""
 }

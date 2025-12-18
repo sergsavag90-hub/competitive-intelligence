@@ -5,76 +5,104 @@
 ПОМИЛКА:
 --------
 runc run failed: unable to apply apparmor profile
-write fsmount:fscontext:proc/thread-self/attr/apparmor/exec: 
+write fsmount:fscontext:proc/thread-self/attr/apparmor/exec:
 no such file or directory
 
 ПРИЧИНА:
 --------
-Docker намагається використовувати AppArmor всередині LXC контейнера,
-де AppArmor не доступний.
+Docker намагається застосувати AppArmor профіль усередині LXC,
+але профілі контролюються Proxmox хостом. Потрібно дозволити
+контейнеру працювати з профілем `unconfined` і очистити
+`daemon.json` від невалідних параметрів.
 
 ═══════════════════════════════════════════════════════════════
 
-ШВИДКЕ РІШЕННЯ (ВИБЕРІТЬ ОДИН СПОСІБ):
-────────────────────────────────────────────────────────────────
+ШВИДКЕ РІШЕННЯ (2 КРОКИ):
+───────────────────────────────────────────────────────────────
 
-┌─ СПОСІБ 1: АВТОМАТИЧНИЙ (РЕКОМЕНДОВАНО) ─────────────────────┐
-│                                                                │
-│  В LXC контейнері виконайте:                                  │
-│                                                                │
-│  cd /opt/competitive-intelligence                             │
-│  ./fix-docker-apparmor.sh                                     │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+1️⃣  НАЛАШТУЙТЕ PROXMOX ХОСТ
+----------------------------
+```
+# На Proxmox
+pct stop <VMID>
+pct set <VMID> --features keyctl=1,nesting=1
+grep -q "lxc.apparmor.profile" /etc/pve/lxc/<VMID>.conf \
+  && sed -i "s/^lxc\.apparmor\.profile:.*/lxc.apparmor.profile: unconfined/" /etc/pve/lxc/<VMID>.conf \
+  || echo "lxc.apparmor.profile: unconfined" >> /etc/pve/lxc/<VMID>.conf
+pct start <VMID>
+```
 
-┌─ СПОСІБ 2: РУЧНИЙ (ЯКЩО СКРИПТ НЕ ПРАЦЮЄ) ───────────────────┐
-│                                                                │
-│  sudo mkdir -p /etc/docker                                    │
-│  sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'         │
-│  {                                                             │
-│    "storage-driver": "overlay2",                              │
-│    "security-opts": [                                         │
-│      "apparmor=unconfined"                                    │
-│    ]                                                           │
-│  }                                                             │
-│  EOF                                                           │
-│                                                                │
-│  sudo systemctl restart docker                                │
-│  docker run --rm hello-world                                  │
-│                                                                │
-└────────────────────────────────────────────────────────────────┘
+2️⃣  ОНОВІТЬ DOCKER КОНФІГ У LXC
+--------------------------------
+```
+cd /opt/competitive-intelligence
+./fix-docker-apparmor.sh
+```
+
+Скрипт створить backup, відновить коректний `daemon.json`,
+перезапустить Docker та виконає тестовий контейнер.
+
+═══════════════════════════════════════════════════════════════
+
+РУЧНИЙ ВАРІАНТ (ЯКЩО СКРИПТ НЕ ДОСТУПНИЙ):
+──────────────────────────────────────────
+```
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'
+{
+  "storage-driver": "overlay2",
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Hard": 64000,
+      "Soft": 64000
+    }
+  }
+}
+EOF
+sudo systemctl restart docker
+docker run --rm hello-world
+```
 
 ═══════════════════════════════════════════════════════════════
 
 ПЕРЕВІРКА:
 ──────────
-docker info | grep -i security
-# Має показати: Security Options: apparmor=unconfined
+```
+docker info | grep -A3 "Security Options"
+# Очікуйте: apparmor, seccomp, cgroupns
 
-docker build -t test - <<< "FROM alpine:latest"
-# Має зібратися без помилок
+docker build -t test - <<< $'FROM alpine:latest\nRUN apk add --no-cache bash'
+docker rmi test
+```
 
 ═══════════════════════════════════════════════════════════════
 
 ПІСЛЯ ВИПРАВЛЕННЯ:
 ──────────────────
+```
 cd /opt/competitive-intelligence
 ./deploy.sh
+```
 
 ═══════════════════════════════════════════════════════════════
 
 БЕЗПЕКА:
 ────────
-✓ Це безпечно для LXC контейнерів
-✓ Docker все ще ізольований через namespaces, cgroups, seccomp
-✓ LXC контейнер сам надає ізоляцію
-✗ НЕ вимикайте AppArmor на хост-системі Proxmox!
+✓ Зміни стосуються лише LXC контейнера  
+✓ Docker продовжує використовувати AppArmor/ Seccomp  
+✗ Не вимикайте AppArmor на всьому Proxmox хості  
 
 ═══════════════════════════════════════════════════════════════
 
 ДЕТАЛЬНА ДОКУМЕНТАЦІЯ:
 ──────────────────────
-- DOCKER_LXC_FIX.md - повна інструкція
-- PROXMOX_DEPLOYMENT.md - розділ "Усунення проблем"
+- DOCKER_LXC_FIX.md — повна інструкція
+- PROXMOX_DEPLOYMENT.md — розділ «Усунення проблем»
 
 ═══════════════════════════════════════════════════════════════

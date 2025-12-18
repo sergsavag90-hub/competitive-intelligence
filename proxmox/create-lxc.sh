@@ -165,6 +165,25 @@ configure_container() {
     print_success "Контейнер налаштовано"
 }
 
+configure_apparmor() {
+    print_info "Налаштування AppArmor профілю для контейнера..."
+    
+    local config_file="/etc/pve/lxc/${VMID}.conf"
+    
+    if [[ ! -f "$config_file" ]]; then
+        print_warning "Файл $config_file не знайдено — пропускаю AppArmor налаштування"
+        return
+    fi
+    
+    if grep -q "^lxc.apparmor.profile:" "$config_file"; then
+        sed -i "s/^lxc\.apparmor\.profile:.*/lxc.apparmor.profile: unconfined/" "$config_file"
+    else
+        echo "lxc.apparmor.profile: unconfined" >> "$config_file"
+    fi
+    
+    print_success "AppArmor профіль виставлено у unconfined"
+}
+
 ##############################################################################
 # Container Setup
 ##############################################################################
@@ -230,8 +249,8 @@ install_docker() {
     
     print_success "Docker встановлено"
     
-    # Fix AppArmor for Docker in LXC
-    print_info "Налаштування Docker для LXC (вимкнення AppArmor)..."
+    # Apply sane defaults for Docker inside LXC
+    print_info "Налаштування Docker для LXC..."
     pct exec "$VMID" -- bash -c '
         # Create Docker daemon config
         mkdir -p /etc/docker
@@ -249,10 +268,7 @@ install_docker() {
       "Hard": 64000,
       "Soft": 64000
     }
-  },
-  "security-opts": [
-    "apparmor=unconfined"
-  ]
+  }
 }
 DOCKEREOF
         
@@ -392,6 +408,7 @@ EOF
     check_template
     create_container
     configure_container
+    configure_apparmor
     start_container
     setup_system
     install_docker

@@ -213,23 +213,39 @@ apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 docker --version
 docker compose version
 
-# ВАЖЛИВО! Виправте AppArmor для Docker в LXC
-# Цей крок обов'язковий для роботи Docker всередині LXC контейнера
+# ВАЖЛИВО! Дозвольте Docker працювати в LXC
+# 1) На Proxmox хості (зупиніть CT)
+pct stop 100
+pct set 100 --features keyctl=1,nesting=1
+grep -q "lxc.apparmor.profile" /etc/pve/lxc/100.conf \
+  && sed -i "s/^lxc\.apparmor\.profile:.*/lxc.apparmor.profile: unconfined/" /etc/pve/lxc/100.conf \
+  || echo "lxc.apparmor.profile: unconfined" >> /etc/pve/lxc/100.conf
+pct start 100
+
+# 2) Усередині контейнера
 cd /opt/competitive-intelligence
 ./fix-docker-apparmor.sh
 ```
 
-**Примітка:** Якщо ви ще не завантажили проект, створіть тимчасову конфігурацію Docker:
+**Примітка:** Якщо проект ще не скопійовано, тимчасово створіть конфіг вручну:
 
 ```bash
-# Альтернативний спосіб (без скрипта)
 mkdir -p /etc/docker
-cat > /etc/docker/daemon.json << 'EOF'
+cat > /etc/docker/daemon.json <<'EOF'
 {
   "storage-driver": "overlay2",
-  "security-opts": [
-    "apparmor=unconfined"
-  ]
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Hard": 64000,
+      "Soft": 64000
+    }
+  }
 }
 EOF
 
@@ -579,24 +595,29 @@ runc run failed: unable to apply apparmor profile: apparmor failed to apply prof
 write fsmount:fscontext:proc/thread-self/attr/apparmor/exec: no such file or directory
 ```
 
-**Рішення:**
+**Чому так стається:** LXC контейнер запускається з AppArmor профілем, який блокує Docker. Потрібно дозволити профіль `unconfined` для контейнера на хості та очистити `daemon.json`.
 
-Ця помилка виникає тому, що Docker намагається використовувати AppArmor всередині LXC контейнера, де AppArmor не доступний.
-
-**Варіант 1: Автоматичне виправлення (рекомендовано)**
+**Кроки:**
 
 ```bash
+# На Proxmox хості
+pct stop 100
+pct set 100 --features keyctl=1,nesting=1
+grep -q "lxc.apparmor.profile" /etc/pve/lxc/100.conf \
+  && sed -i "s/^lxc\.apparmor\.profile:.*/lxc.apparmor.profile: unconfined/" /etc/pve/lxc/100.conf \
+  || echo "lxc.apparmor.profile: unconfined" >> /etc/pve/lxc/100.conf
+pct start 100
+
 # В LXC контейнері
 cd /opt/competitive-intelligence
 ./fix-docker-apparmor.sh
 ```
 
-**Варіант 2: Ручне виправлення**
+**Ручний варіант:**
 
 ```bash
-# Створіть або відредагуйте /etc/docker/daemon.json
 mkdir -p /etc/docker
-cat > /etc/docker/daemon.json << 'EOF'
+cat > /etc/docker/daemon.json <<'EOF'
 {
   "storage-driver": "overlay2",
   "log-driver": "json-file",
@@ -604,16 +625,16 @@ cat > /etc/docker/daemon.json << 'EOF'
     "max-size": "10m",
     "max-file": "3"
   },
-  "security-opts": [
-    "apparmor=unconfined"
-  ]
+  "default-ulimits": {
+    "nofile": {
+      "Name": "nofile",
+      "Hard": 64000,
+      "Soft": 64000
+    }
+  }
 }
 EOF
-
-# Перезапустіть Docker
 systemctl restart docker
-
-# Перевірте що працює
 docker run --rm hello-world
 docker build -t test - <<< "FROM alpine:latest"
 docker rmi test
@@ -622,20 +643,17 @@ docker rmi test
 **Перевірка:**
 
 ```bash
-# Перевірте конфігурацію Docker
-docker info | grep -i security
+docker info | grep -A3 "Security Options"
+# Має відобразити apparmor, seccomp, cgroupns
 
-# Має показати: Security Options: apparmor=unconfined
-
-# Спробуйте зібрати образ
 cd /opt/competitive-intelligence
 docker compose -f docker-compose.proxmox.yml build --no-cache
 ```
 
 **ВАЖЛИВО:** 
-- Ця конфігурація безпечна тільки для LXC контейнерів
-- НЕ вимикайте AppArmor на хост-системі Proxmox
-- Docker всередині LXC все ще ізольований контейнером
+- Зміни стосуються лише конкретного LXC контейнера
+- AppArmor на Proxmox хості залишається увімкненим
+- Docker продовжує використовувати AppArmor/ seccomp усередині контейнера
 
 ---
 
