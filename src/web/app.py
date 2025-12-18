@@ -50,6 +50,11 @@ def index():
     """Serve dashboard."""
     return render_template('index.html')
 
+@app.route('/health')
+def health():
+    """Healthcheck endpoint for Docker."""
+    return jsonify({'status': 'ok'}), 200
+
 
 @app.route('/api/competitors')
 def get_competitors():

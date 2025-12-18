@@ -1,5 +1,9 @@
 version: '3.8'
 
+x-docker-defaults: &docker_defaults
+  security_opt:
+    - apparmor=unconfined
+
 ##############################################################################
 # Docker Compose для Proxmox архітектури
 # Кожен браузер у окремому контейнері для легкого масштабування
@@ -8,6 +12,7 @@ version: '3.8'
 services:
   # Selenium Hub - центральний координатор
   selenium-hub:
+    <<: *docker_defaults
     image: selenium/hub:4.26.0
     container_name: selenium-hub
     restart: unless-stopped
@@ -37,6 +42,7 @@ services:
 
   # Chrome Browser Node 1
   chrome-node-1:
+    <<: *docker_defaults
     image: selenium/node-chrome:4.26.0
     container_name: selenium-chrome-1
     restart: unless-stopped
@@ -76,6 +82,7 @@ services:
 
   # Chrome Browser Node 2
   chrome-node-2:
+    <<: *docker_defaults
     image: selenium/node-chrome:4.26.0
     container_name: selenium-chrome-2
     restart: unless-stopped
@@ -115,6 +122,7 @@ services:
 
   # Firefox Browser Node 1
   firefox-node-1:
+    <<: *docker_defaults
     image: selenium/node-firefox:4.26.0
     container_name: selenium-firefox-1
     restart: unless-stopped
@@ -154,6 +162,7 @@ services:
 
   # Edge Browser Node 1
   edge-node-1:
+    <<: *docker_defaults
     image: selenium/node-edge:4.26.0
     container_name: selenium-edge-1
     restart: unless-stopped
@@ -193,6 +202,7 @@ services:
 
   # Веб-інтерфейс конкурентної розвідки
   intelligence-web:
+    <<: *docker_defaults
     build:
       context: .
       dockerfile: Dockerfile
@@ -228,6 +238,7 @@ services:
 
   # Ollama для LLM аналізу (опціонально)
   ollama:
+    <<: *docker_defaults
     image: ollama/ollama:latest
     container_name: ollama-intelligence
     restart: unless-stopped
@@ -251,6 +262,7 @@ services:
 
   # Worker для фонових завдань
   intelligence-worker:
+    <<: *docker_defaults
     build:
       context: .
       dockerfile: Dockerfile
@@ -270,7 +282,7 @@ services:
     depends_on:
       selenium-hub:
         condition: service_healthy
-    command: python run_intelligence.py --daemon
+    command: python run_intelligence.py --full --silent
     labels:
       - "com.proxmox.service=intelligence-worker"
       - "com.proxmox.description=Background Intelligence Worker"
