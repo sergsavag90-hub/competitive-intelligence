@@ -21,6 +21,9 @@ if str(ROOT_DIR) not in sys.path:
 
 from src.database.db_manager import DatabaseManager  # noqa: E402
 from src.utils.config import config  # noqa: E402
+from src.utils.price_analyzer import PriceAnalyzer  # noqa: E402
+from src.utils.change_detector import ChangeDetector  # noqa: E402
+from src.utils.llm_analyzer import LLMAnalyzer  # noqa: E402
 from run_intelligence import CompetitiveIntelligence  # noqa: E402
 
 app = Flask(__name__)
@@ -30,6 +33,9 @@ logging.basicConfig(level=getattr(logging, config.log_level.upper(), logging.INF
 logger = logging.getLogger(__name__)
 
 db = DatabaseManager()
+price_analyzer = PriceAnalyzer(db)
+change_detector = ChangeDetector(db)
+llm_analyzer = LLMAnalyzer(db, config.get('ollama.host', 'http://ollama:11434'))
 scan_jobs: Dict[str, Dict[str, Any]] = {}
 
 
@@ -211,6 +217,165 @@ def scan_status(job_id: str):
     if not job:
         return jsonify({'error': 'Не знайдено'}), 404
     return jsonify(job)
+
+
+# === NEW ANALYTICS ENDPOINTS ===
+
+@app.route('/api/competitor/<int:competitor_id>/price-analysis')
+def get_price_analysis(competitor_id: int):
+    """Get price analysis for competitor."""
+    try:
+        days = request.args.get('days', default=30, type=int)
+        analysis = price_analyzer.analyze_price_trends(competitor_id, days)
+        return jsonify(analysis)
+    except Exception as e:
+        logger.exception("Error in price analysis")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/competitor/<int:competitor_id>/pricing-strategy')
+def get_pricing_strategy(competitor_id: int):
+    """Get pricing strategy analysis."""
+    try:
+        strategy = price_analyzer.detect_pricing_strategy(competitor_id)
+        return jsonify(strategy)
+    except Exception as e:
+        logger.exception("Error detecting pricing strategy")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/price-comparison')
+def get_price_comparison():
+    """Compare prices across competitors."""
+    try:
+        category = request.args.get('category', default=None, type=str)
+        comparison = price_analyzer.compare_prices_with_competitors(category)
+        return jsonify(comparison)
+    except Exception as e:
+        logger.exception("Error in price comparison")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/competitor/<int:competitor_id>/price-recommendations')
+def get_price_recommendations(competitor_id: int):
+    """Get price optimization recommendations."""
+    try:
+        recommendations = price_analyzer.get_price_optimization_recommendations(competitor_id)
+        return jsonify({'recommendations': recommendations})
+    except Exception as e:
+        logger.exception("Error generating price recommendations")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/competitor/<int:competitor_id>/changes')
+def get_changes(competitor_id: int):
+    """Get recent changes for competitor."""
+    try:
+        hours = request.args.get('hours', default=24, type=int)
+        
+        new_products = change_detector.detect_new_products(competitor_id, hours)
+        new_promotions = change_detector.detect_new_promotions(competitor_id, hours)
+        price_increases, price_decreases = change_detector.detect_price_changes(competitor_id, hours)
+        back_in_stock, out_of_stock = change_detector.detect_stock_changes(competitor_id, hours)
+        
+        return jsonify({
+            'period_hours': hours,
+            'new_products': new_products,
+            'new_promotions': new_promotions,
+            'price_increases': price_increases,
+            'price_decreases': price_decreases,
+            'back_in_stock': back_in_stock,
+            'out_of_stock': out_of_stock,
+            'summary': {
+                'total_new_products': len(new_products),
+                'total_new_promotions': len(new_promotions),
+                'total_price_increases': len(price_increases),
+                'total_price_decreases': len(price_decreases),
+                'total_back_in_stock': len(back_in_stock),
+                'total_out_of_stock': len(out_of_stock)
+            }
+        })
+    except Exception as e:
+        logger.exception("Error detecting changes")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/changes-summary')
+def get_changes_summary():
+    """Get changes summary for all competitors."""
+    try:
+        hours = request.args.get('hours', default=24, type=int)
+        competitor_id = request.args.get('competitor_id', default=None, type=int)
+        
+        summary = change_detector.get_changes_summary(competitor_id, hours)
+        return jsonify(summary)
+    except Exception as e:
+        logger.exception("Error getting changes summary")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/competitor/<int:competitor_id>/swot-analysis', methods=['POST'])
+def generate_swot_analysis(competitor_id: int):
+    """Generate SWOT analysis using LLM."""
+    try:
+        data = request.get_json() or {}
+        model = data.get('model', None)
+        
+        # Generate analysis in background thread
+        job_id = str(uuid4())
+        scan_jobs[job_id] = {'status': 'running'}
+        
+        def _generate():
+            try:
+                result = llm_analyzer.generate_competitor_swot(competitor_id, model)
+                scan_jobs[job_id] = {'status': 'completed', 'result': result}
+            except Exception as exc:
+                logger.exception("Error generating SWOT")
+                scan_jobs[job_id] = {'status': 'failed', 'error': str(exc)}
+        
+        thread = Thread(target=_generate, daemon=True)
+        thread.start()
+        
+        return jsonify({'job_id': job_id})
+    except Exception as e:
+        logger.exception("Error initiating SWOT analysis")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/competitor/<int:competitor_id>/swot-analysis')
+def get_swot_analysis(competitor_id: int):
+    """Get latest SWOT analysis."""
+    try:
+        analysis = llm_analyzer.get_latest_analysis(competitor_id, 'swot')
+        if not analysis:
+            return jsonify({'error': 'No analysis found'}), 404
+        return jsonify(analysis)
+    except Exception as e:
+        logger.exception("Error retrieving SWOT analysis")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/competitor/<int:competitor_id>/content-recommendations', methods=['POST'])
+def generate_content_recommendations(competitor_id: int):
+    """Generate content recommendations using LLM."""
+    try:
+        data = request.get_json() or {}
+        target_audience = data.get('target_audience', 'B2C')
+        model = data.get('model', None)
+        
+        recommendations = llm_analyzer.generate_content_recommendations(
+            competitor_id, 
+            target_audience, 
+            model
+        )
+        
+        if not recommendations:
+            return jsonify({'error': 'Failed to generate recommendations'}), 500
+        
+        return jsonify(recommendations)
+    except Exception as e:
+        logger.exception("Error generating content recommendations")
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
