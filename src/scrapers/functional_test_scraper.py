@@ -6,6 +6,7 @@ on target websites using the BaseScraper infrastructure.
 """
 
 import logging
+import time
 from typing import Any, Dict, Optional
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
