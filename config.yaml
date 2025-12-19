@@ -27,6 +27,8 @@ targets:
 modules:
   seo:
     enabled: true
+    max_pages_to_crawl: 50
+    max_crawl_depth: 3
     collect_meta_tags: true
     collect_headings: true
     collect_robots_txt: true

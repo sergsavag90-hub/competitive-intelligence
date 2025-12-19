@@ -138,7 +138,16 @@ class DatabaseManager:
         """Зберегти SEO дані"""
         session = self.get_session()
         try:
-            seo = SEOData(competitor_id=competitor_id, **seo_data)
+            # Витягуємо нові поля, які не є частиною моделі SEOData
+            semantic_core = seo_data.pop('semantic_core', None)
+            crawled_pages_count = seo_data.pop('crawled_pages_count', 0)
+            
+            seo = SEOData(
+                competitor_id=competitor_id, 
+                semantic_core=semantic_core,
+                crawled_pages_count=crawled_pages_count,
+                **seo_data
+            )
             session.add(seo)
             session.commit()
             session.refresh(seo)

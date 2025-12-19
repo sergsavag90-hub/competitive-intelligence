@@ -100,6 +100,10 @@ class SEOData(Base):
     page_load_time = Column(Float)
     page_size_kb = Column(Integer)
     
+    # Semantic Core Data
+    crawled_pages_count = Column(Integer, default=0)
+    semantic_core = Column(JSON) # Агреговане семантичне ядро
+    
     collected_at = Column(DateTime, default=datetime.utcnow)
     
     competitor = relationship("Competitor", back_populates="seo_data")

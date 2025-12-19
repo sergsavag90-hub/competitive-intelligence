@@ -81,6 +81,13 @@ class Config:
     def is_module_enabled(self, module_name: str) -> bool:
         """Перевірити, чи увімкнено модуль"""
         return self.get(f'modules.{module_name}.enabled', False)
+
+    def get_seo_crawl_settings(self) -> Dict[str, Any]:
+        """Отримати налаштування обходу для SEO"""
+        return {
+            'max_pages_to_crawl': self.get('modules.seo.max_pages_to_crawl', 50),
+            'max_crawl_depth': self.get('modules.seo.max_crawl_depth', 3),
+        }
     
     # Database
     @property

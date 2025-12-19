@@ -6,12 +6,15 @@ import time
 import logging
 import re
 import requests
+import json
 from typing import Dict, Any, List
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 
 from ..utils.selenium_helper import SeleniumHelper
+from ..utils.site_crawler import SiteCrawler # NEW IMPORT
+from ..utils.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +23,59 @@ class SEOScraper(SeleniumHelper):
     """Клас для збору SEO даних"""
     
     def scrape(self, url: str) -> Dict[str, Any]:
-        """Зібрати всі SEO дані з сайту"""
-        logger.info(f"Збір SEO даних з {url}")
+        """Зібрати всі SEO дані з сайту, включаючи семантичне ядро з обходу"""
+        logger.info(f"Запуск SEO аналізу для {url}")
         
+        # 1. Збір базових даних з головної сторінки
+        base_seo_data = self._scrape_single_page(url)
+        
+        # 2. Обхід сайту та збір семантичного ядра
+        logger.info(f"Початок обходу сайту для збору семантичного ядра...")
+        
+        # Налаштування обходу
+        max_pages = config.get('modules.seo.max_pages_to_crawl', 50)
+        max_depth = config.get('modules.seo.max_crawl_depth', 3)
+        
+        crawler = SiteCrawler(url, max_pages=max_pages, max_depth=max_depth)
+        
+        # Функція, яка буде викликана для кожної сторінки
+        def process_page_for_seo(page_url: str, html_content: str) -> Dict[str, Any]:
+            """Витягує SEO-релевантні дані з однієї сторінки"""
+            soup = BeautifulSoup(html_content, 'lxml')
+            
+            # Збір заголовків
+            headings = self._extract_headings(soup)
+            
+            # Збір мета-тегів (для ключових слів)
+            meta_tags = self._extract_meta_tags(soup)
+            
+            return {
+                'url': page_url,
+                'title': meta_tags.get('title'),
+                'meta_description': meta_tags.get('meta_description'),
+                'h1_tags': headings.get('h1_tags', []),
+                'h2_tags': headings.get('h2_tags', []),
+                'h3_tags': headings.get('h3_tags', []),
+            }
+
+        # Запуск обходу
+        page_data_list = crawler.crawl(process_page_for_seo)
+        
+        # 3. Агрегація семантичного ядра
+        semantic_core = self._aggregate_semantic_core(page_data_list)
+        
+        # 4. Об'єднання результатів
+        final_data = {
+            **base_seo_data,
+            'semantic_core': semantic_core,
+            'crawled_pages_count': len(page_data_list),
+        }
+        
+        logger.info(f"SEO аналіз завершено. Зібрано дані з {final_data['crawled_pages_count']} сторінок.")
+        return final_data
+
+    def _scrape_single_page(self, url: str) -> Dict[str, Any]:
+        """Зібрати SEO дані з однієї сторінки (головної)"""
         seo_data = {
             'title': None,
             'meta_description': None,
@@ -51,18 +104,20 @@ class SEOScraper(SeleniumHelper):
             # Запускаємо таймер для page_load_time
             start_time = time.time()
             
-            if not self.safe_get(url):
-                logger.error(f"Не вдалося завантажити {url}")
-                return seo_data
+            # Використовуємо requests, оскільки SiteCrawler вже використовує його
+            # Якщо потрібен Selenium, можна перемкнути на self.safe_get(url)
+            # Але для SEO-аналізу зазвичай достатньо requests
+            response = requests.get(url, headers={'User-Agent': config.user_agent}, timeout=config.request_timeout)
+            response.raise_for_status()
+            page_source = response.text
             
             load_time = time.time() - start_time
             seo_data['page_load_time'] = round(load_time, 2)
             
-            # Отримуємо HTML
-            page_source = self.get_page_source()
             if not page_source:
                 logger.error("Порожній HTML-вміст, пропускаємо SEO аналіз")
                 return seo_data
+            
             soup = BeautifulSoup(page_source, 'lxml')
             
             # Розмір сторінки
@@ -89,15 +144,75 @@ class SEOScraper(SeleniumHelper):
             seo_data['sitemap_url'] = sitemap_info['url']
             seo_data['sitemap_urls_count'] = sitemap_info['urls_count']
             
-            logger.info(f"SEO дані успішно зібрано з {url}")
+            logger.info(f"Базові SEO дані успішно зібрано з {url}")
             
         except Exception as e:
-            logger.error(f"Помилка збору SEO даних: {e}", exc_info=True)
-        
-        finally:
-            self.close_driver()
+            logger.error(f"Помилка збору базових SEO даних: {e}", exc_info=True)
         
         return seo_data
+
+    def _aggregate_semantic_core(self, page_data_list: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Агрегує дані з усіх сторінок у структуроване семантичне ядро."""
+        
+        # Словник для підрахунку частоти ключових слів/фраз
+        keyword_frequency: Dict[str, int] = {}
+        
+        # Списки для унікальних заголовків
+        unique_h1: Set[str] = set()
+        unique_h2: Set[str] = set()
+        unique_h3: Set[str] = set()
+        
+        for page_data in page_data_list:
+            # Агрегація заголовків
+            for h1 in page_data.get('h1_tags', []):
+                unique_h1.add(h1)
+            for h2 in page_data.get('h2_tags', []):
+                unique_h2.add(h2)
+            for h3 in page_data.get('h3_tags', []):
+                unique_h3.add(h3)
+                
+            # Агрегація ключових слів з мета-тегів (якщо є)
+            # Тут можна додати більш складний аналіз тексту, але почнемо з простого
+            meta_desc = page_data.get('meta_description')
+            if meta_desc:
+                # Простий підрахунок слів у мета-описі
+                for word in re.findall(r'\b\w+\b', meta_desc.lower()):
+                    keyword_frequency[word] = keyword_frequency.get(word, 0) + 1
+            
+            # Агрегація слів із заголовків
+            for heading_list in [page_data.get('h1_tags', []), page_data.get('h2_tags', []), page_data.get('h3_tags', [])]:
+                for heading in heading_list:
+                    for word in re.findall(r'\b\w+\b', heading.lower()):
+                        keyword_frequency[word] = keyword_frequency.get(word, 0) + 1
+
+        # Фільтрація та сортування ключових слів
+        # Видаляємо стоп-слова (простий приклад)
+        stop_words = set(['the', 'a', 'an', 'is', 'and', 'or', 'to', 'in', 'of', 'with', 'for', 'on', 'з', 'на', 'у', 'і', 'та', 'для', 'це', 'що', 'як'])
+        
+        filtered_keywords = {
+            k: v for k, v in keyword_frequency.items() 
+            if v > 1 and len(k) > 2 and k not in stop_words
+        }
+        
+        # Топ-20 ключових слів
+        top_keywords = dict(sorted(filtered_keywords.items(), key=lambda item: item[1], reverse=True)[:20])
+        
+        return {
+            'top_keywords': top_keywords,
+            'unique_h1_count': len(unique_h1),
+            'unique_h2_count': len(unique_h2),
+            'unique_h3_count': len(unique_h3),
+            'unique_h1_samples': list(unique_h1)[:10],
+            'unique_h2_samples': list(unique_h2)[:10],
+            'unique_h3_samples': list(unique_h3)[:10],
+        }
+
+    # Решта методів залишаються без змін, але їх потрібно перенести в клас
+    # або переконатися, що вони викликаються коректно.
+    # Оскільки вони були методами SeleniumHelper, вони повинні бути доступні.
+    
+    # Переносимо всі допоміжні методи в SEOScraper, щоб вони були доступні
+    # і використовували requests, а не Selenium, для швидкості.
     
     def _extract_meta_tags(self, soup: BeautifulSoup) -> Dict[str, Any]:
         """Витягти мета-теги"""
@@ -152,11 +267,11 @@ class SEOScraper(SeleniumHelper):
         
         # H2
         h2_tags = soup.find_all('h2')
-        data['h2_tags'] = [h2.get_text(strip=True) for h2 in h2_tags if h2.get_text(strip=True)][:20]  # Обмежуємо до 20
+        data['h2_tags'] = [h2.get_text(strip=True) for h2 in h2_tags if h2.get_text(strip=True)]
         
         # H3
         h3_tags = soup.find_all('h3')
-        data['h3_tags'] = [h3.get_text(strip=True) for h3 in h3_tags if h3.get_text(strip=True)][:20]
+        data['h3_tags'] = [h3.get_text(strip=True) for h3 in h3_tags if h3.get_text(strip=True)]
         
         return data
     
@@ -168,7 +283,6 @@ class SEOScraper(SeleniumHelper):
         json_ld_scripts = soup.find_all('script', type='application/ld+json')
         for script in json_ld_scripts:
             try:
-                import json
                 data = json.loads(script.string)
                 structured_data.append({
                     'type': 'json-ld',
