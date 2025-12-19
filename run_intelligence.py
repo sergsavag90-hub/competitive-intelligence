@@ -251,12 +251,12 @@ def main():
         help='Ім\'я конкретного конкурента для аналізу'
     )
     
-        parser.add_argument(
-            '--module',
-            type=str,
-            choices=['seo', 'company', 'products', 'promotions', 'functional_test'],
-            help='Запустити тільки конкретний модуль'
-        )
+    parser.add_argument(
+        '--module',
+        type=str,
+        choices=['seo', 'company', 'products', 'promotions', 'functional_test'],
+        help='Запустити тільки конкретний модуль'
+    )
     
     parser.add_argument(
         '--url',
