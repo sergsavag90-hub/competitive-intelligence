@@ -47,6 +47,9 @@ modules:
     collect_images: true
     collect_descriptions: true
     
+  functional_test:
+    enabled: true
+    
   promotions:
     enabled: true
     keywords:

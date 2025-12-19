@@ -31,6 +31,7 @@ class Competitor(Base):
     products = relationship("Product", back_populates="competitor", cascade="all, delete-orphan")
     promotions = relationship("Promotion", back_populates="competitor", cascade="all, delete-orphan")
     scan_history = relationship("ScanHistory", back_populates="competitor", cascade="all, delete-orphan")
+    functional_tests = relationship("FunctionalTestResult", back_populates="competitor", cascade="all, delete-orphan") # NEW
     
     def __repr__(self):
         return f"<Competitor(name='{self.name}', url='{self.url}')>"
@@ -284,3 +285,25 @@ class LLMAnalysis(Base):
     
     def __repr__(self):
         return f"<LLMAnalysis(type='{self.analysis_type}', competitor_id={self.competitor_id})>"
+
+
+class FunctionalTestResult(Base):
+    """Результати функціонального тестування (реєстрація, форми)"""
+    __tablename__ = 'functional_test_results'
+    
+    id = Column(Integer, primary_key=True)
+    competitor_id = Column(Integer, ForeignKey('competitors.id'), nullable=False)
+    
+    # Test results
+    registration_status = Column(String(50)) # success, failed, skipped, error
+    registration_message = Column(Text)
+    contact_form_status = Column(String(50)) # success, failed, skipped, error
+    contact_form_message = Column(Text)
+    
+    # Metadata
+    collected_at = Column(DateTime, default=datetime.utcnow)
+    
+    competitor = relationship("Competitor", back_populates="functional_tests")
+    
+    def __repr__(self):
+        return f"<FunctionalTestResult(competitor_id={self.competitor_id}, reg_status='{self.registration_status}')>"

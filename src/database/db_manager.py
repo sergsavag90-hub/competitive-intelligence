@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .models import (
     Base, Competitor, SEOData, CompanyData, Product, 
-    Promotion, ScanHistory, PriceHistory, LLMAnalysis
+    Promotion, ScanHistory, PriceHistory, LLMAnalysis, FunctionalTestResult
 )
 from ..utils.config import config
 
@@ -299,6 +299,35 @@ class DatabaseManager:
         finally:
             session.close()
     
+    # ==================== FUNCTIONAL TEST ====================
+    
+    def save_functional_test_data(self, competitor_id: int, test_data: Dict[str, Any]) -> 'FunctionalTestResult':
+        """Зберегти результати функціонального тестування"""
+        session = self.get_session()
+        try:
+            # Extract data from the nested structure
+            reg_data = test_data.get('registration_test', {})
+            contact_data = test_data.get('contact_form_test', {})
+            
+            test_result = FunctionalTestResult(
+                competitor_id=competitor_id,
+                registration_status=reg_data.get('status', 'error'),
+                registration_message=reg_data.get('message', 'No message'),
+                contact_form_status=contact_data.get('status', 'error'),
+                contact_form_message=contact_data.get('message', 'No message')
+            )
+            session.add(test_result)
+            session.commit()
+            session.refresh(test_result)
+            logger.info(f"Збережено результати функціонального тестування для competitor_id={competitor_id}")
+            return test_result
+        except SQLAlchemyError as e:
+            session.rollback()
+            logger.error(f"Помилка збереження результатів функціонального тестування: {e}")
+            raise
+        finally:
+            session.close()
+
     # ==================== LLM ANALYSIS ====================
     
     def save_llm_analysis(self, analysis_data: Dict[str, Any]) -> LLMAnalysis:

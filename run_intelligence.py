@@ -18,6 +18,7 @@ from src.scrapers.seo_scraper import SEOScraper
 from src.scrapers.company_scraper import CompanyScraper
 from src.scrapers.product_scraper import ProductScraper
 from src.scrapers.promotion_scraper import PromotionScraper
+from src.scrapers.functional_test_scraper import FunctionalTestScraper
 
 # Налаштування логування
 def setup_logging(silent: bool = False):
@@ -157,6 +158,19 @@ class CompetitiveIntelligence:
                     logger.error(error_msg)
                     errors.append(error_msg)
             
+            # Модуль Functional Test
+            if config.is_module_enabled('functional_test'):
+                logger.info("\n🧪 Запуск функціонального тестування (реєстрація/форми)...")
+                try:
+                    test_results = self.run_functional_test(url)
+                    self.db.save_functional_test_data(competitor_id, test_results)
+                    total_items += 1
+                    logger.info("✓ Результати функціонального тестування збережено")
+                except Exception as e:
+                    error_msg = f"Functional Test помилка: {e}"
+                    logger.error(error_msg)
+                    errors.append(error_msg)
+
             # Модуль Promotions
             if config.is_module_enabled('promotions'):
                 logger.info("\n🎁 Збір акцій та промо...")
@@ -208,6 +222,11 @@ class CompetitiveIntelligence:
         scraper = ProductScraper()
         return scraper.scrape(url)
     
+    def run_functional_test(self, url: str):
+        """Функціональне тестування (реєстрація/форми)"""
+        scraper = FunctionalTestScraper()
+        return scraper.scrape(url)
+
     def run_promotion_analysis(self, url: str):
         """Аналіз акцій"""
         scraper = PromotionScraper()
@@ -232,12 +251,12 @@ def main():
         help='Ім\'я конкретного конкурента для аналізу'
     )
     
-    parser.add_argument(
-        '--module',
-        type=str,
-        choices=['seo', 'company', 'products', 'promotions'],
-        help='Запустити тільки конкретний модуль'
-    )
+        parser.add_argument(
+            '--module',
+            type=str,
+            choices=['seo', 'company', 'products', 'promotions', 'functional_test'],
+            help='Запустити тільки конкретний модуль'
+        )
     
     parser.add_argument(
         '--url',
@@ -284,6 +303,9 @@ def main():
         elif args.module == 'promotions':
             data = ci.run_promotion_analysis(args.url)
             print(f"Знайдено {len(data)} акцій")
+        elif args.module == 'functional_test':
+            data = ci.run_functional_test(args.url)
+            print(f"Результати функціонального тестування: {data}")
         else:
             logger.error("Вкажіть --module для прямого аналізу URL")
         return
