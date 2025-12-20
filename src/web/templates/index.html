@@ -166,10 +166,12 @@
 
         .vnc-frame {
             width: 100%;
-            height: 200px;
+            aspect-ratio: 16 / 9;
+            min-height: 320px;
             border: none;
             border-radius: 10px;
             background: #fff;
+            overflow: hidden;
         }
         
         .competitor-card {
@@ -448,7 +450,8 @@
             mappings.forEach(({ id, port }) => {
                 const frame = document.getElementById(id);
                 if (frame) {
-                    frame.src = `http://${host}:${port}`;
+                    frame.setAttribute('scrolling', 'no');
+                    frame.src = `http://${host}:${port}/?autoconnect=1&resize=scale&view_only=1`;
                 }
             });
         }
