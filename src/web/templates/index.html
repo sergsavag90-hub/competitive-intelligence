@@ -156,6 +156,8 @@
             border-radius: 12px;
             padding: 15px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
         }
 
         .vnc-card h3 {
@@ -166,12 +168,21 @@
 
         .vnc-frame {
             width: 100%;
-            aspect-ratio: 16 / 9;
-            min-height: 320px;
+            height: 100%;
+            min-height: 360px;
             border: none;
             border-radius: 10px;
             background: #fff;
             overflow: hidden;
+            display: block;
+        }
+
+        /* Hide any iframe scrollbars to avoid hunting for the viewport */
+        .vnc-frame::-webkit-scrollbar {
+            display: none;
+        }
+        .vnc-frame {
+            scrollbar-width: none;
         }
         
         .competitor-card {
@@ -451,7 +462,7 @@
                 const frame = document.getElementById(id);
                 if (frame) {
                     frame.setAttribute('scrolling', 'no');
-                    frame.src = `http://${host}:${port}/?autoconnect=1&resize=scale&view_only=1`;
+                    frame.src = `http://${host}:${port}/?autoconnect=1&resize=remote&view_only=1&reconnect=1&reconnect_delay=2000&logging=warn`;
                 }
             });
         }
