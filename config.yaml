@@ -4,8 +4,8 @@
 selenium_grid:
   hub_url: "http://192.168.1.10:4444/wd/hub"
   browser: "chrome"
-  headless: true
-  mode: "requests"  # remote | local | requests
+  headless: false
+  mode: "remote"  # remote | local | requests
   requests_fallback: true
   implicit_wait: 10
   page_load_timeout: 30

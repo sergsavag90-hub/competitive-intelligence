@@ -26,6 +26,7 @@ from selenium.common.exceptions import (
     StaleElementReferenceException,
 )
 
+from src.utils.config import config
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -37,15 +38,15 @@ class ScraperConfig:
 
     def __init__(
         self,
-        grid_url: str = "http://localhost:4444",
-        max_workers: int = 5,
-        timeout: int = 30,
-        implicit_wait: int = 10,
-        page_load_timeout: int = 60,
-        max_retries: int = 3,
-        retry_delay: float = 1.0,
-        headless: bool = True,
-        browser: str = "chrome",
+        grid_url: str = None,
+        max_workers: int = None,
+        timeout: int = None,
+        implicit_wait: int = None,
+        page_load_timeout: int = None,
+        max_retries: int = None,
+        retry_delay: float = None,
+        headless: bool = None,
+        browser: str = None,
     ):
         """
         Initialize scraper configuration.
@@ -61,15 +62,15 @@ class ScraperConfig:
             headless: Run browser in headless mode
             browser: Browser type ('chrome', 'firefox', 'edge')
         """
-        self.grid_url = grid_url
-        self.max_workers = max_workers
-        self.timeout = timeout
-        self.implicit_wait = implicit_wait
-        self.page_load_timeout = page_load_timeout
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
-        self.headless = headless
-        self.browser = browser.lower()
+        self.grid_url = grid_url or config.selenium_hub_url
+        self.max_workers = max_workers or config.parallel_workers
+        self.timeout = timeout or config.page_load_timeout
+        self.implicit_wait = implicit_wait or config.implicit_wait
+        self.page_load_timeout = page_load_timeout or config.page_load_timeout
+        self.max_retries = max_retries or config.retry_attempts
+        self.retry_delay = retry_delay or config.retry_delay
+        self.headless = headless if headless is not None else config.selenium_headless
+        self.browser = (browser or config.selenium_browser).lower()
 
 
 class BrowserSessionPool:
