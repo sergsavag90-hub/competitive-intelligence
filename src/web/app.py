@@ -13,6 +13,7 @@ from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 from threading import Thread
 from uuid import uuid4
+from urllib.parse import urlparse
 
 # Ensure the project root is importable when running inside Docker
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -169,25 +170,97 @@ def get_promotions(competitor_id: int):
     } for promo in promotions]
     return jsonify(data)
 
+def _ensure_competitor(url: str):
+    """Create competitor if missing."""
+    parsed = urlparse(url)
+    name = parsed.netloc or url
+    competitor = db.get_competitor_by_name(name)
+    if not competitor:
+        competitor = db.add_competitor(
+            name=name,
+            url=url,
+            priority=1,
+            enabled=True,
+        )
+    return competitor
+
+
 def _run_scan_job(job_id: str, url: str, scan_type: str) -> None:
-    """Execute scan in background thread."""
+    """
+    Execute scan in background thread, persist results, and track scan history.
+    """
     logger.info("Початок сканування %s (%s)", url, scan_type)
     scan_jobs[job_id] = {'status': 'running'}
     ci = CompetitiveIntelligence()
     results: Dict[str, Any] = {}
+    errors: List[str] = []
+    items_collected = 0
+
+    competitor = _ensure_competitor(url)
+    scan = db.start_scan(
+        competitor_id=competitor.id,
+        scan_type=scan_type,
+        metadata={'target': competitor.name, 'url': url}
+    )
+
     try:
         if scan_type in ('seo', 'full'):
-            results['seo'] = ci.run_seo_analysis(url)
+            try:
+                seo_data = ci.run_seo_analysis(url)
+                if seo_data:
+                    db.save_seo_data(competitor.id, seo_data)
+                    items_collected += 1
+                    results['seo'] = 'saved'
+            except Exception as exc:  # pylint: disable=broad-except
+                errors.append(f"SEO: {exc}")
+
         if scan_type in ('company', 'full'):
-            results['company'] = ci.run_company_analysis(url)
+            try:
+                company_data = ci.run_company_analysis(url)
+                if company_data:
+                    db.save_company_data(competitor.id, company_data)
+                    items_collected += 1
+                    results['company'] = 'saved'
+            except Exception as exc:  # pylint: disable=broad-except
+                errors.append(f"Company: {exc}")
+
         if scan_type in ('products', 'full'):
-            results['products'] = ci.run_product_analysis(url)
+            try:
+                products = ci.run_product_analysis(url)
+                for product in products:
+                    db.add_or_update_product(competitor.id, product)
+                items_collected += len(products)
+                results['products'] = len(products)
+            except Exception as exc:  # pylint: disable=broad-except
+                errors.append(f"Products: {exc}")
+
         if scan_type in ('promotions', 'full'):
-            results['promotions'] = ci.run_promotion_analysis(url)
-        scan_jobs[job_id] = {'status': 'completed', 'result': results}
-        logger.info("Сканування %s завершено", url)
+            try:
+                promotions = ci.run_promotion_analysis(url)
+                for promo in promotions:
+                    db.add_or_update_promotion(competitor.id, promo)
+                items_collected += len(promotions)
+                results['promotions'] = len(promotions)
+            except Exception as exc:  # pylint: disable=broad-except
+                errors.append(f"Promotions: {exc}")
+
+        status = 'completed' if not errors else 'partial'
+        db.complete_scan(
+            scan_id=scan.id,
+            status=status,
+            items_collected=items_collected,
+            error_message="\n".join(errors) if errors else None,
+        )
+        scan_jobs[job_id] = {'status': status, 'result': results, 'errors': errors}
+        logger.info("Сканування %s завершено (%s)", url, status)
     except Exception as exc:  # pylint: disable=broad-except
         logger.exception("Помилка сканування %s", url)
+        db.complete_scan(
+            scan_id=scan.id,
+            status='failed',
+            items_collected=items_collected,
+            error_message=str(exc),
+        )
         scan_jobs[job_id] = {'status': 'failed', 'error': str(exc)}
 
 @app.route('/api/scan', methods=['POST'])
