@@ -2,11 +2,11 @@
 
 # Selenium Grid налаштування
 selenium_grid:
-  hub_url: "http://192.168.1.10:4444/wd/hub"
+  hub_url: "http://192.168.1.172:4444/wd/hub"
   browser: "chrome"
   headless: false
   mode: "remote"  # remote | local | requests
-  requests_fallback: true
+  requests_fallback: false
   implicit_wait: 10
   page_load_timeout: 30
   screenshot_on_error: true
