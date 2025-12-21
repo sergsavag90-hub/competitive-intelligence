@@ -12,16 +12,7 @@ selenium_grid:
   screenshot_on_error: true
 
 # Цілі для аналізу (конкуренти)
-targets:
-  - name: "Competitor 1"
-    url: "https://example-competitor1.com"
-    enabled: true
-    priority: 1
-    
-  - name: "Competitor 2"
-    url: "https://example-competitor2.com"
-    enabled: true
-    priority: 2
+targets: []  # Додайте власних конкурентів у форматі name/url/priority
 
 # Модулі збору даних
 modules:

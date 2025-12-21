@@ -46,6 +46,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    profiles:
+      - cron
     container_name: competitive-intelligence-cron
     restart: unless-stopped
     environment:

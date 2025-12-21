@@ -263,6 +263,8 @@ services:
   # Worker для фонових завдань
   intelligence-worker:
     <<: *docker_defaults
+    profiles:
+      - worker
     build:
       context: .
       dockerfile: Dockerfile
