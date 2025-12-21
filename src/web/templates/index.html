@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -32,6 +32,39 @@
             margin-bottom: 30px;
             font-size: 2.5em;
             text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #764ba2;
+            border-bottom-color: #764ba2;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
         
         .stats-grid {
@@ -67,16 +100,24 @@
         }
 
         .form-row input,
-        .form-row select {
+        .form-row select,
+        .form-row textarea {
             padding: 12px 15px;
             border: 1px solid #d5d8de;
             border-radius: 10px;
             font-size: 1em;
             transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-row textarea {
+            min-height: 100px;
+            resize: vertical;
         }
 
         .form-row input:focus,
-        .form-row select:focus {
+        .form-row select:focus,
+        .form-row textarea:focus {
             border-color: #764ba2;
             outline: none;
         }
@@ -96,6 +137,26 @@
         .primary-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        .primary-btn:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        .secondary-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: opacity 0.2s ease;
+        }
+
+        .secondary-btn:hover {
+            opacity: 0.8;
         }
 
         .scan-status {
@@ -134,55 +195,6 @@
         
         .competitors-list {
             margin-top: 30px;
-        }
-
-        .vnc-grid {
-            margin-top: 40px;
-        }
-
-        .vnc-grid h2 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .vnc-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .vnc-card {
-            background: #f0f2ff;
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .vnc-card h3 {
-            margin-bottom: 10px;
-            font-size: 1.1em;
-            color: #444;
-        }
-
-        .vnc-frame {
-            width: 100%;
-            height: 100%;
-            min-height: 360px;
-            border: none;
-            border-radius: 10px;
-            background: #fff;
-            overflow: hidden;
-            display: block;
-        }
-
-        /* Hide any iframe scrollbars to avoid hunting for the viewport */
-        .vnc-frame::-webkit-scrollbar {
-            display: none;
-        }
-        .vnc-frame {
-            scrollbar-width: none;
         }
         
         .competitor-card {
@@ -232,6 +244,19 @@
             border-radius: 20px;
             font-size: 0.9em;
         }
+
+        .badge.success {
+            background: #28a745;
+        }
+
+        .badge.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge.danger {
+            background: #dc3545;
+        }
         
         .loading {
             text-align: center;
@@ -239,82 +264,420 @@
             font-size: 1.2em;
             color: #666;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f5f7fa;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .pagination-help {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .pagination-help h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .pagination-help p {
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+        }
+
+        .semantic-core {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .semantic-core h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .keyword-cluster {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .keyword-cluster h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .keyword-tag {
+            background: #e0e7ff;
+            color: #4c51bf;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🕵️ Competitive Intelligence Dashboard</h1>
 
-        <div class="scan-card">
-            <h2>Швидке сканування сайту</h2>
-            <form id="scanForm">
-                <div class="form-row">
-                    <label for="scanUrl">URL сайту</label>
-                    <input type="url" id="scanUrl" placeholder="https://example.com" required>
-                </div>
-                <div class="form-row">
-                    <label for="scanType">Тип аналізу</label>
-                    <select id="scanType">
-                        <option value="full">Повний аналіз</option>
-                        <option value="seo">SEO</option>
-                        <option value="company">Контактні дані</option>
-                        <option value="products">Товари</option>
-                        <option value="promotions">Акції</option>
-                    </select>
-                </div>
-                <button type="submit" class="primary-btn" id="scanSubmit">Запустити сканування</button>
-            </form>
-            <div id="scanStatus" class="scan-status"></div>
-        </div>
-        
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card">
-                <h3>Всього конкурентів</h3>
-                <div class="value" id="totalCompetitors">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Товарів відстежується</h3>
-                <div class="value" id="totalProducts">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Активних акцій</h3>
-                <div class="value" id="totalPromotions">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Останнє оновлення</h3>
-                <div class="value" id="lastUpdate" style="font-size: 1.2em;">-</div>
-            </div>
-        </div>
-        
-        <div class="competitors-list">
-            <h2>Конкуренти</h2>
-            <div id="competitorsList" class="loading">Завантаження...</div>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">📊 Огляд</button>
+            <button class="tab" onclick="switchTab('scan')">🔍 Сканування</button>
+            <button class="tab" onclick="switchTab('tests')">🧪 Тестування</button>
+            <button class="tab" onclick="switchTab('seo')">📈 SEO Аналіз</button>
+            <button class="tab" onclick="switchTab('settings')">⚙️ Налаштування</button>
         </div>
 
-        <div class="vnc-grid">
-            <h2>Live VNC Streams</h2>
-            <div class="vnc-cards">
-                <div class="vnc-card">
-                    <h3>Chrome Node 1 (VNC)</h3>
-                    <iframe id="vnc-chrome-1" class="vnc-frame" src=""></iframe>
+        <!-- Overview Tab -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <h3>Всього конкурентів</h3>
+                    <div class="value" id="totalCompetitors">-</div>
                 </div>
-                <div class="vnc-card">
-                    <h3>Chrome Node 2 (VNC)</h3>
-                    <iframe id="vnc-chrome-2" class="vnc-frame" src=""></iframe>
+                <div class="stat-card">
+                    <h3>Товарів відстежується</h3>
+                    <div class="value" id="totalProducts">-</div>
                 </div>
-                <div class="vnc-card">
-                    <h3>Firefox Node (VNC)</h3>
-                    <iframe id="vnc-firefox-1" class="vnc-frame" src=""></iframe>
+                <div class="stat-card">
+                    <h3>Активних акцій</h3>
+                    <div class="value" id="totalPromotions">-</div>
                 </div>
-                <div class="vnc-card">
-                    <h3>Edge Node (VNC)</h3>
-                    <iframe id="vnc-edge-1" class="vnc-frame" src=""></iframe>
+                <div class="stat-card">
+                    <h3>Останнє оновлення</h3>
+                    <div class="value" id="lastUpdate" style="font-size: 1.2em;">-</div>
                 </div>
             </div>
+            
+            <div class="competitors-list">
+                <h2>Конкуренти</h2>
+                <div id="competitorsList" class="loading">Завантаження...</div>
+            </div>
+        </div>
+
+        <!-- Scan Tab -->
+        <div id="tab-scan" class="tab-content">
+            <div class="scan-card">
+                <h2>Швидке сканування сайту</h2>
+                <form id="scanForm">
+                    <div class="form-row">
+                        <label for="scanUrl">URL сайту</label>
+                        <input type="url" id="scanUrl" placeholder="https://example.com" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="scanType">Тип аналізу</label>
+                        <select id="scanType">
+                            <option value="full">Повний аналіз (SEO + Контакти + Товари + Акції)</option>
+                            <option value="seo">Тільки SEO</option>
+                            <option value="company">Тільки контактні дані</option>
+                            <option value="products">Тільки товари</option>
+                            <option value="promotions">Тільки акції</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="primary-btn" id="scanSubmit">🚀 Запустити сканування</button>
+                </form>
+                <div id="scanStatus" class="scan-status"></div>
+                <div id="scanProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tests Tab -->
+        <div id="tab-tests" class="tab-content">
+            <div class="scan-card">
+                <h2>🧪 Функціональне тестування</h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Перевірка форм реєстрації, контактних форм та інших інтерактивних елементів на сайтах конкурентів.
+                </p>
+                <form id="testForm">
+                    <div class="form-row">
+                        <label for="testUrl">URL сайту для тестування</label>
+                        <input type="url" id="testUrl" placeholder="https://example.com" required>
+                    </div>
+                    <button type="submit" class="primary-btn" id="testSubmit">🧪 Запустити тестування</button>
+                </form>
+                <div id="testStatus" class="scan-status"></div>
+            </div>
+
+            <div class="scan-card">
+                <h2>📋 Результати тестування</h2>
+                <div id="testResults">
+                    <div class="loading">Немає результатів тестування</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Analysis Tab -->
+        <div id="tab-seo" class="tab-content">
+            <div class="scan-card">
+                <h2>📈 Повний SEO аналіз сайту</h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Аналіз всіх сторінок сайту з побудовою семантичного ядра та структури ключових слів.
+                </p>
+                <form id="seoForm">
+                    <div class="form-row">
+                        <label for="seoUrl">URL сайту</label>
+                        <input type="url" id="seoUrl" placeholder="https://example.com" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="maxPages">Максимальна кількість сторінок для аналізу</label>
+                        <input type="number" id="maxPages" value="50" min="1" max="500">
+                    </div>
+                    <div class="form-row">
+                        <label for="maxDepth">Максимальна глибина сканування</label>
+                        <input type="number" id="maxDepth" value="3" min="1" max="10">
+                    </div>
+                    <button type="submit" class="primary-btn" id="seoSubmit">📊 Запустити SEO аналіз</button>
+                </form>
+                <div id="seoStatus" class="scan-status"></div>
+                <div id="seoProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="seoProgressFill" style="width: 0%">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="paginationHelp" class="pagination-help" style="display: none;">
+                <h3>⚠️ Потрібна допомога з пагінацією</h3>
+                <p id="paginationMessage"></p>
+                <div class="form-row" style="margin-top: 15px;">
+                    <label for="paginationPattern">Шаблон пагінації (опціонально)</label>
+                    <input type="text" id="paginationPattern" placeholder="Наприклад: /page/2/, /page/3/, або ?page=2, ?page=3">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        Введіть приклади URL сторінок пагінації, розділені комами
+                    </small>
+                </div>
+                <button class="primary-btn" onclick="submitPaginationHelp()">Продовжити з цим шаблоном</button>
+                <button class="secondary-btn" onclick="skipPagination()">Пропустити пагінацію</button>
+            </div>
+
+            <div id="semanticCore" class="semantic-core" style="display: none;">
+                <h3>🎯 Семантичне ядро</h3>
+                <div id="semanticCoreContent"></div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="tab-settings" class="tab-content">
+            <div class="scan-card">
+                <h2>⚙️ Налаштування</h2>
+                <form id="settingsForm">
+                    <div class="form-row">
+                        <label for="seleniumHub">Selenium Grid Hub URL</label>
+                        <input type="url" id="seleniumHub" value="http://192.168.1.172:4444/wd/hub">
+                    </div>
+                    <div class="form-row">
+                        <label for="browser">Браузер</label>
+                        <select id="browser">
+                            <option value="chrome" selected>Chrome</option>
+                            <option value="firefox">Firefox</option>
+                            <option value="edge">Edge</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label>
+                            <input type="checkbox" id="headless"> Headless режим
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label for="parallelWorkers">Паралельних воркерів</label>
+                        <input type="number" id="parallelWorkers" value="3" min="1" max="10">
+                    </div>
+                    <div class="form-row">
+                        <label for="retryAttempts">Спроб повтору при помилці</label>
+                        <input type="number" id="retryAttempts" value="3" min="1" max="10">
+                    </div>
+                    <button type="submit" class="primary-btn">💾 Зберегти налаштування</button>
+                </form>
+            </div>
+
+            <div class="scan-card">
+                <h2>🎯 Додати конкурента</h2>
+                <form id="addCompetitorForm">
+                    <div class="form-row">
+                        <label for="compName">Назва конкурента</label>
+                        <input type="text" id="compName" placeholder="Competitor Inc." required>
+                    </div>
+                    <div class="form-row">
+                        <label for="compUrl">URL сайту</label>
+                        <input type="url" id="compUrl" placeholder="https://competitor.com" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="compPriority">Пріоритет (1-10)</label>
+                        <input type="number" id="compPriority" value="5" min="1" max="10">
+                    </div>
+                    <button type="submit" class="primary-btn">➕ Додати конкурента</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination Help Modal -->
+    <div id="paginationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePaginationModal()">&times;</span>
+            <h2>Допоможіть з пагінацією</h2>
+            <p id="modalMessage"></p>
+            <div class="form-row">
+                <label for="modalPaginationPattern">Приклади URL пагінації:</label>
+                <textarea id="modalPaginationPattern" rows="4" placeholder="https://example.com/products?page=1&#10;https://example.com/products?page=2&#10;https://example.com/products?page=3"></textarea>
+            </div>
+            <button class="primary-btn" onclick="submitModalPagination()">Підтвердити</button>
+            <button class="secondary-btn" onclick="closePaginationModal()">Скасувати</button>
         </div>
     </div>
     
     <script>
+        let currentScanJobId = null;
+        let currentSeoJobId = null;
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            // Add active class to selected tab
+            event.target.classList.add('active');
+        }
+
         async function loadData() {
             try {
                 const response = await fetch('/api/competitors');
@@ -345,7 +708,14 @@
                                 <span class="badge">🎁 ${comp.stats.total_promotions || 0} акцій</span>
                             </div>
                             <div class="stat-item">
-                                <span class="badge">${comp.stats.has_seo_data ? '✓ SEO' : '✗ SEO'}</span>
+                                <span class="badge ${comp.stats.has_seo_data ? 'success' : 'warning'}">
+                                    ${comp.stats.has_seo_data ? '✓ SEO' : '✗ SEO'}
+                                </span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="badge ${comp.enabled ? 'success' : 'danger'}">
+                                    ${comp.enabled ? '✓ Активний' : '✗ Неактивний'}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -361,8 +731,8 @@
         }
         
         loadData();
-        populateVncFrames();
         
+        // Scan Form Handler
         const scanForm = document.getElementById('scanForm');
         if (scanForm) {
             scanForm.addEventListener('submit', handleScanSubmit);
@@ -376,6 +746,7 @@
 
             displayScanStatus('Надсилання запиту на сканування...', 'info');
             submitBtn.disabled = true;
+            showProgress('scanProgress', 10);
 
             try {
                 const response = await fetch('/api/scan', {
@@ -390,16 +761,20 @@
                 if (!response.ok) {
                     const err = await response.json().catch(() => ({}));
                     displayScanStatus(err.error || 'Не вдалося запустити сканування', 'error');
+                    hideProgress('scanProgress');
                     submitBtn.disabled = false;
                     return;
                 }
 
                 const data = await response.json();
+                currentScanJobId = data.job_id;
                 displayScanStatus('Сканування запущено. Очікуємо результат...', 'info');
-                pollScan(data.job_id, submitBtn);
+                showProgress('scanProgress', 20);
+                pollScan(data.job_id, submitBtn, 'scanProgress', 'progressFill');
             } catch (error) {
                 console.error(error);
                 displayScanStatus('Помилка мережі під час запуску скану', 'error');
+                hideProgress('scanProgress');
                 submitBtn.disabled = false;
             }
         }
@@ -418,54 +793,387 @@
             statusEl.innerHTML = html;
         }
 
-        function pollScan(jobId, button) {
+        function showProgress(containerId, percent) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.style.display = 'block';
+                const fillId = containerId === 'scanProgress' ? 'progressFill' : 'seoProgressFill';
+                updateProgress(fillId, percent);
+            }
+        }
+
+        function hideProgress(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.style.display = 'none';
+            }
+        }
+
+        function updateProgress(fillId, percent) {
+            const fill = document.getElementById(fillId);
+            if (fill) {
+                fill.style.width = percent + '%';
+                fill.textContent = percent + '%';
+            }
+        }
+
+        function pollScan(jobId, button, progressContainerId, progressFillId) {
+            let progress = 20;
             async function checkStatus() {
                 try {
                     const response = await fetch(`/api/scan/${jobId}`);
                     if (!response.ok) {
                         displayScanStatus('Не вдалося отримати статус сканування', 'error');
+                        hideProgress(progressContainerId);
                         button.disabled = false;
                         return;
                     }
                     const data = await response.json();
-                    if (data.status === 'completed') {
-                        displayScanStatus('Сканування завершено успішно', 'success', data.result);
-                        button.disabled = false;
+                    
+                    // Update progress
+                    if (progress < 90) {
+                        progress += 10;
+                        updateProgress(progressFillId, progress);
+                    }
+
+                    if (data.status === 'completed' || data.status === 'partial') {
+                        updateProgress(progressFillId, 100);
+                        displayScanStatus('✅ Сканування завершено успішно', 'success', data.result);
+                        setTimeout(() => {
+                            hideProgress(progressContainerId);
+                            button.disabled = false;
+                            loadData(); // Refresh data
+                        }, 2000);
                         return;
                     }
                     if (data.status === 'failed') {
-                        displayScanStatus(`Сканування завершилось помилкою: ${data.error || 'невідома помилка'}`, 'error');
+                        displayScanStatus(`❌ Сканування завершилось помилкою: ${data.error || 'невідома помилка'}`, 'error');
+                        hideProgress(progressContainerId);
                         button.disabled = false;
                         return;
                     }
-                    displayScanStatus(`Сканування триває... Статус: ${data.status}`, 'info');
+                    displayScanStatus(`⏳ Сканування триває... Статус: ${data.status}`, 'info');
                     setTimeout(checkStatus, 3000);
                 } catch (error) {
                     console.error(error);
                     displayScanStatus('Помилка під час перевірки статусу', 'error');
+                    hideProgress(progressContainerId);
                     button.disabled = false;
                 }
             }
             checkStatus();
         }
 
-        function populateVncFrames() {
-            const host = window.location.hostname || 'localhost';
-            const mappings = [
-                { id: 'vnc-chrome-1', port: 7901 },
-                { id: 'vnc-chrome-2', port: 7902 },
-                { id: 'vnc-firefox-1', port: 7903 },
-                { id: 'vnc-edge-1', port: 7904 }
-            ];
+        // Test Form Handler
+        const testForm = document.getElementById('testForm');
+        if (testForm) {
+            testForm.addEventListener('submit', handleTestSubmit);
+        }
 
-            mappings.forEach(({ id, port }) => {
-                const frame = document.getElementById(id);
-                if (frame) {
-                    frame.setAttribute('scrolling', 'no');
-                    frame.setAttribute('allowfullscreen', 'true');
-                    frame.setAttribute('allow', 'fullscreen; clipboard-read; clipboard-write');
-                    frame.src = `http://${host}:${port}/?autoconnect=1&resize=remote&view_only=1&reconnect=1&reconnect_delay=2000&logging=warn`;
+        async function handleTestSubmit(event) {
+            event.preventDefault();
+            const urlInput = document.getElementById('testUrl');
+            const submitBtn = document.getElementById('testSubmit');
+            const statusEl = document.getElementById('testStatus');
+
+            statusEl.innerHTML = '<div style="color:#333;">Запуск функціонального тестування...</div>';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: urlInput.value.trim(),
+                        scan_type: 'functional_test'
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    statusEl.innerHTML = `<div style="color:#c0392b;">${err.error || 'Помилка запуску тестування'}</div>`;
+                    submitBtn.disabled = false;
+                    return;
                 }
+
+                const data = await response.json();
+                statusEl.innerHTML = '<div style="color:#333;">Тестування запущено. Очікуємо результатів...</div>';
+                pollTestResults(data.job_id, submitBtn, statusEl);
+            } catch (error) {
+                console.error(error);
+                statusEl.innerHTML = '<div style="color:#c0392b;">Помилка мережі</div>';
+                submitBtn.disabled = false;
+            }
+        }
+
+        function pollTestResults(jobId, button, statusEl) {
+            async function checkStatus() {
+                try {
+                    const response = await fetch(`/api/scan/${jobId}`);
+                    if (!response.ok) {
+                        statusEl.innerHTML = '<div style="color:#c0392b;">Не вдалося отримати статус</div>';
+                        button.disabled = false;
+                        return;
+                    }
+                    const data = await response.json();
+                    
+                    if (data.status === 'completed' || data.status === 'partial') {
+                        statusEl.innerHTML = '<div style="color:#0f8b63;">✅ Тестування завершено</div>';
+                        button.disabled = false;
+                        displayTestResults(data.result);
+                        return;
+                    }
+                    if (data.status === 'failed') {
+                        statusEl.innerHTML = `<div style="color:#c0392b;">❌ Тестування не вдалося: ${data.error || 'unknown'}</div>`;
+                        button.disabled = false;
+                        return;
+                    }
+                    statusEl.innerHTML = `<div style="color:#333;">⏳ Тестування... Статус: ${data.status}</div>`;
+                    setTimeout(checkStatus, 3000);
+                } catch (error) {
+                    console.error(error);
+                    statusEl.innerHTML = '<div style="color:#c0392b;">Помилка під час перевірки статусу</div>';
+                    button.disabled = false;
+                }
+            }
+            checkStatus();
+        }
+
+        function displayTestResults(result) {
+            const resultsEl = document.getElementById('testResults');
+            if (!result || !result.functional_test) {
+                resultsEl.innerHTML = '<div class="loading">Немає результатів тестування</div>';
+                return;
+            }
+
+            const testData = result.functional_test;
+            let html = '<table><thead><tr><th>Тест</th><th>Статус</th><th>Повідомлення</th></tr></thead><tbody>';
+            
+            if (testData.registration_test) {
+                const status = testData.registration_test.status;
+                const badge = status === 'success' ? 'success' : status === 'skipped' ? 'warning' : 'danger';
+                html += `<tr>
+                    <td>📝 Реєстрація</td>
+                    <td><span class="badge ${badge}">${status}</span></td>
+                    <td>${testData.registration_test.message || '-'}</td>
+                </tr>`;
+            }
+
+            if (testData.contact_form_test) {
+                const status = testData.contact_form_test.status;
+                const badge = status === 'success' ? 'success' : status === 'skipped' ? 'warning' : 'danger';
+                html += `<tr>
+                    <td>📧 Контактна форма</td>
+                    <td><span class="badge ${badge}">${status}</span></td>
+                    <td>${testData.contact_form_test.message || '-'}</td>
+                </tr>`;
+            }
+
+            html += '</tbody></table>';
+            resultsEl.innerHTML = html;
+        }
+
+        // SEO Form Handler
+        const seoForm = document.getElementById('seoForm');
+        if (seoForm) {
+            seoForm.addEventListener('submit', handleSeoSubmit);
+        }
+
+        async function handleSeoSubmit(event) {
+            event.preventDefault();
+            const urlInput = document.getElementById('seoUrl');
+            const maxPages = document.getElementById('maxPages').value;
+            const maxDepth = document.getElementById('maxDepth').value;
+            const submitBtn = document.getElementById('seoSubmit');
+            const statusEl = document.getElementById('seoStatus');
+
+            statusEl.innerHTML = '<div style="color:#333;">Запуск SEO аналізу...</div>';
+            submitBtn.disabled = true;
+            showProgress('seoProgress', 10);
+
+            try {
+                const response = await fetch('/api/seo/full-analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: urlInput.value.trim(),
+                        max_pages: parseInt(maxPages),
+                        max_depth: parseInt(maxDepth)
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    statusEl.innerHTML = `<div style="color:#c0392b;">${err.error || 'Помилка запуску аналізу'}</div>`;
+                    hideProgress('seoProgress');
+                    submitBtn.disabled = false;
+                    return;
+                }
+
+                const data = await response.json();
+                currentSeoJobId = data.job_id;
+                statusEl.innerHTML = '<div style="color:#333;">SEO аналіз запущено...</div>';
+                showProgress('seoProgress', 20);
+                pollSeoAnalysis(data.job_id, submitBtn, statusEl);
+            } catch (error) {
+                console.error(error);
+                statusEl.innerHTML = '<div style="color:#c0392b;">Помилка мережі</div>';
+                hideProgress('seoProgress');
+                submitBtn.disabled = false;
+            }
+        }
+
+        function pollSeoAnalysis(jobId, button, statusEl) {
+            let progress = 20;
+            async function checkStatus() {
+                try {
+                    const response = await fetch(`/api/seo/analysis-status/${jobId}`);
+                    if (!response.ok) {
+                        statusEl.innerHTML = '<div style="color:#c0392b;">Не вдалося отримати статус</div>';
+                        hideProgress('seoProgress');
+                        button.disabled = false;
+                        return;
+                    }
+                    const data = await response.json();
+                    
+                    // Update progress
+                    if (data.progress) {
+                        updateProgress('seoProgressFill', data.progress);
+                    } else if (progress < 90) {
+                        progress += 5;
+                        updateProgress('seoProgressFill', progress);
+                    }
+
+                    if (data.status === 'completed') {
+                        updateProgress('seoProgressFill', 100);
+                        statusEl.innerHTML = '<div style="color:#0f8b63;">✅ SEO аналіз завершено</div>';
+                        setTimeout(() => {
+                            hideProgress('seoProgress');
+                            button.disabled = false;
+                            displaySemanticCore(data.result);
+                        }, 2000);
+                        return;
+                    }
+                    if (data.status === 'needs_help') {
+                        showPaginationHelp(data.message);
+                        statusEl.innerHTML = '<div style="color:#856404;">⚠️ Потрібна допомога з пагінацією</div>';
+                        return;
+                    }
+                    if (data.status === 'failed') {
+                        statusEl.innerHTML = `<div style="color:#c0392b;">❌ Аналіз не вдався: ${data.error || 'unknown'}</div>`;
+                        hideProgress('seoProgress');
+                        button.disabled = false;
+                        return;
+                    }
+                    
+                    const progressMsg = data.pages_analyzed ? ` (${data.pages_analyzed} сторінок проаналізовано)` : '';
+                    statusEl.innerHTML = `<div style="color:#333;">⏳ Аналіз... Статус: ${data.status}${progressMsg}</div>`;
+                    setTimeout(checkStatus, 3000);
+                } catch (error) {
+                    console.error(error);
+                    statusEl.innerHTML = '<div style="color:#c0392b;">Помилка під час перевірки статусу</div>';
+                    hideProgress('seoProgress');
+                    button.disabled = false;
+                }
+            }
+            checkStatus();
+        }
+
+        function showPaginationHelp(message) {
+            const helpDiv = document.getElementById('paginationHelp');
+            const messageP = document.getElementById('paginationMessage');
+            messageP.textContent = message;
+            helpDiv.style.display = 'block';
+        }
+
+        async function submitPaginationHelp() {
+            const pattern = document.getElementById('paginationPattern').value.trim();
+            if (!currentSeoJobId) return;
+
+            try {
+                const response = await fetch('/api/seo/pagination-help', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        job_id: currentSeoJobId,
+                        pagination_pattern: pattern
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('paginationHelp').style.display = 'none';
+                    document.getElementById('seoStatus').innerHTML = '<div style="color:#333;">Продовжуємо аналіз з вказаним шаблоном...</div>';
+                    // Continue polling
+                    pollSeoAnalysis(currentSeoJobId, document.getElementById('seoSubmit'), document.getElementById('seoStatus'));
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Помилка відправки допомоги');
+            }
+        }
+
+        function skipPagination() {
+            submitPaginationHelp(); // Submit with empty pattern
+        }
+
+        function displaySemanticCore(result) {
+            const coreDiv = document.getElementById('semanticCore');
+            const contentDiv = document.getElementById('semanticCoreContent');
+            
+            if (!result || !result.semantic_core) {
+                contentDiv.innerHTML = '<p>Немає даних про семантичне ядро</p>';
+                coreDiv.style.display = 'block';
+                return;
+            }
+
+            const core = result.semantic_core;
+            let html = `<div class="alert alert-info">
+                <strong>Проаналізовано сторінок:</strong> ${result.pages_analyzed || 0}<br>
+                <strong>Унікальних ключових слів:</strong> ${result.total_keywords || 0}
+            </div>`;
+
+            if (core.clusters && core.clusters.length > 0) {
+                html += '<h4>Кластери ключових слів:</h4>';
+                core.clusters.forEach((cluster, index) => {
+                    html += `<div class="keyword-cluster">
+                        <h4>Кластер ${index + 1}: ${cluster.name || 'Unnamed'}</h4>
+                        <div class="keywords">
+                            ${cluster.keywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('')}
+                        </div>
+                    </div>`;
+                });
+            }
+
+            contentDiv.innerHTML = html;
+            coreDiv.style.display = 'block';
+        }
+
+        function closePaginationModal() {
+            document.getElementById('paginationModal').style.display = 'none';
+        }
+
+        function submitModalPagination() {
+            const pattern = document.getElementById('modalPaginationPattern').value.trim();
+            document.getElementById('paginationPattern').value = pattern;
+            closePaginationModal();
+            submitPaginationHelp();
+        }
+
+        // Settings Form Handler
+        const settingsForm = document.getElementById('settingsForm');
+        if (settingsForm) {
+            settingsForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                alert('Налаштування збережено (функціонал у розробці)');
+            });
+        }
+
+        // Add Competitor Form Handler
+        const addCompForm = document.getElementById('addCompetitorForm');
+        if (addCompForm) {
+            addCompForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                alert('Додавання конкурента (функціонал у розробці)');
             });
         }
     </script>

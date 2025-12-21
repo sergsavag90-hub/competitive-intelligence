@@ -7,7 +7,7 @@ import logging
 import re
 import requests
 import json
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Set
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
