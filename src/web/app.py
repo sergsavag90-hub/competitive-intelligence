@@ -234,6 +234,16 @@ def _run_scan_job(job_id: str, url: str, scan_type: str) -> None:
             except Exception as exc:  # pylint: disable=broad-except
                 errors.append(f"Products: {exc}")
 
+        if scan_type in ('functional_test', 'full'):
+            try:
+                test_data = ci.run_functional_test(url)
+                if test_data:
+                    db.save_functional_test_data(competitor.id, test_data)
+                    items_collected += 1
+                    results['functional_test'] = test_data
+            except Exception as exc:  # pylint: disable=broad-except
+                errors.append(f"Functional Test: {exc}")
+
         if scan_type in ('promotions', 'full'):
             try:
                 promotions = ci.run_promotion_analysis(url)
@@ -449,6 +459,94 @@ def generate_content_recommendations(competitor_id: int):
     except Exception as e:
         logger.exception("Error generating content recommendations")
         return jsonify({'error': str(e)}), 500
+
+
+# === NEW SEO FULL ANALYSIS ENDPOINTS ===
+
+seo_jobs: Dict[str, Dict[str, Any]] = {}
+
+@app.route('/api/seo/full-analysis', methods=['POST'])
+def start_full_seo_analysis():
+    """Start full SEO analysis with semantic core building."""
+    payload = request.get_json(force=True) or {}
+    url = (payload.get('url') or '').strip()
+    max_pages = payload.get('max_pages', 50)
+    max_depth = payload.get('max_depth', 3)
+
+    if not url:
+        return jsonify({'error': 'URL обов\'язковий'}), 400
+
+    job_id = str(uuid4())
+    seo_jobs[job_id] = {
+        'status': 'queued',
+        'url': url,
+        'max_pages': max_pages,
+        'max_depth': max_depth,
+        'progress': 0,
+        'pages_analyzed': 0
+    }
+
+    def _run_seo_analysis():
+        try:
+            seo_jobs[job_id]['status'] = 'running'
+            seo_jobs[job_id]['progress'] = 10
+            
+            ci = CompetitiveIntelligence()
+            competitor = _ensure_competitor(url)
+            
+            seo_jobs[job_id]['progress'] = 20
+            
+            # Run SEO analysis with crawling
+            seo_data = ci.run_seo_analysis(url)
+            
+            seo_jobs[job_id]['progress'] = 90
+            
+            # Save to database
+            db.save_seo_data(competitor.id, seo_data)
+            
+            seo_jobs[job_id]['status'] = 'completed'
+            seo_jobs[job_id]['progress'] = 100
+            seo_jobs[job_id]['result'] = {
+                'semantic_core': seo_data.get('semantic_core', {}),
+                'pages_analyzed': seo_data.get('crawled_pages_count', 0),
+                'total_keywords': len(seo_data.get('semantic_core', {}).get('top_keywords', {}))
+            }
+            
+        except Exception as exc:
+            logger.exception("Error in full SEO analysis")
+            seo_jobs[job_id]['status'] = 'failed'
+            seo_jobs[job_id]['error'] = str(exc)
+
+    thread = Thread(target=_run_seo_analysis, daemon=True)
+    thread.start()
+
+    return jsonify({'job_id': job_id})
+
+
+@app.route('/api/seo/analysis-status/<job_id>')
+def get_seo_analysis_status(job_id: str):
+    """Get status of SEO analysis job."""
+    job = seo_jobs.get(job_id)
+    if not job:
+        return jsonify({'error': 'Не знайдено'}), 404
+    return jsonify(job)
+
+
+@app.route('/api/seo/pagination-help', methods=['POST'])
+def submit_pagination_help():
+    """Submit pagination help from user."""
+    payload = request.get_json(force=True) or {}
+    job_id = payload.get('job_id')
+    pattern = payload.get('pagination_pattern', '')
+
+    if not job_id or job_id not in seo_jobs:
+        return jsonify({'error': 'Невалідний job_id'}), 400
+
+    # Update job with user-provided pattern
+    seo_jobs[job_id]['pagination_pattern'] = pattern
+    seo_jobs[job_id]['status'] = 'running'  # Resume analysis
+
+    return jsonify({'status': 'ok'})
 
 
 if __name__ == '__main__':
