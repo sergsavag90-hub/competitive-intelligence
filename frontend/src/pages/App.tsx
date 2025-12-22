@@ -12,11 +12,17 @@ const App: React.FC = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const status = useScanStatus(jobId ?? undefined);
+  const [error, setError] = useState<string | null>(null);
 
   const triggerScan = async () => {
     if (!selectedId) return;
-    const { data } = await client.post<{ job_id: string }>(`/scan/${selectedId}`);
-    setJobId(data.job_id);
+    try {
+      const { data } = await client.post<{ job_id: string }>(`/scan/${selectedId}`);
+      setJobId(data.job_id);
+      setError(null);
+    } catch (err: any) {
+      setError(err?.message || "Failed to trigger scan");
+    }
   };
 
   return (
@@ -30,6 +36,11 @@ const App: React.FC = () => {
       </AppBar>
       <Container sx={{ py: 3 }}>
         <Stack spacing={2}>
+          {error && (
+            <Box sx={{ p: 2, border: "1px solid", borderColor: "error.main", borderRadius: 1, color: "error.main" }}>
+              <Typography variant="body2">Error: {error}</Typography>
+            </Box>
+          )}
           <CompetitorTableServer onSelect={(c) => setSelectedId(c.id)} />
           <Stack direction="row" spacing={2}>
             <Button variant="contained" onClick={triggerScan} disabled={!selectedId}>

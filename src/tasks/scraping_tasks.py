@@ -31,3 +31,7 @@ def scrape_competitor_task(self, competitor_id: int, modules=None):
     except Exception as exc:
         logger.error("Task %s failed for competitor %s", self.request.id, competitor_id, exc_info=True)
         raise self.retry(exc=exc, countdown=2 ** self.request.retries)
+
+# Reliability tuning
+celery_app.conf.task_acks_late = True
+celery_app.conf.worker_prefetch_multiplier = 1

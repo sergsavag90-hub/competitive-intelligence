@@ -20,7 +20,18 @@ services:
       - selenium-grid
     depends_on:
       - selenium-hub
+      - redis
     command: python src/web/app.py
+
+  redis:
+    image: redis:7-alpine
+    container_name: ci-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    networks:
+      - selenium-grid
 
   # Ollama для LLM аналізу (опціонально)
   ollama:
