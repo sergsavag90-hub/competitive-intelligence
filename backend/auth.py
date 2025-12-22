@@ -1,6 +1,8 @@
 import os
 from datetime import timedelta
 from typing import Optional
+import asyncio
+import time
 
 import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, Response, Request
@@ -74,7 +76,14 @@ def refresh(response: Response):
 
 
 @router.post("/logout")
+@jwt_required()
 def logout(response: Response):
+    claims = get_jwt()
+    jti = claims.get("jti")
+    exp = claims.get("exp", int(time.time()) + 3600)
+    ttl = max(int(exp - time.time()), 60)
+    if jti and getattr(db.backend, "redis", None):
+        asyncio.run(db.backend.redis.setex(f"blacklist:{jti}", ttl, "1"))
     unset_jwt_cookies(response)
     return {"msg": "logged out"}
 

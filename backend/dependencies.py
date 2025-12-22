@@ -12,7 +12,13 @@ def require_role(role: str = "viewer"):
     def dependency():
         claims = get_jwt()
         user_role = claims.get("role", "viewer")
+        jti = claims.get("jti")
         token_version = claims.get("v", 0)
+        if jti and getattr(db.backend, "redis", None):
+            import asyncio
+            blacklisted = asyncio.run(db.backend.redis.get(f"blacklist:{jti}"))
+            if blacklisted:
+                raise HTTPException(status_code=401, detail="Token revoked")
         if ROLE_ORDER.get(user_role, -1) < ROLE_ORDER.get(role, 0):
             raise HTTPException(status_code=403, detail="Forbidden")
         user_id = get_jwt_identity()
