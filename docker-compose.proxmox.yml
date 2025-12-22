@@ -80,6 +80,33 @@ services:
           cpus: '1'
           memory: 1G
 
+  fastapi:
+    <<: *docker_defaults
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: ci-fastapi
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://user:password@postgres:5432/competitive_intel}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+    ports:
+      - "8000:8000"
+    networks:
+      - selenium-grid
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: ci-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    networks:
+      - selenium-grid
+
   # Chrome Browser Node 2
   chrome-node-2:
     <<: *docker_defaults
