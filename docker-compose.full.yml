@@ -1,0 +1,296 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: ci-traefik
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_LE_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_data:/letsencrypt
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_DASHBOARD_HOST:-monitor.example.com}`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_BASIC_AUTH:-admin:$$2y$$05$$...}"
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: ci-postgres
+    environment:
+      POSTGRES_DB: competitive_intelligence
+      POSTGRES_USER: ci_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ci_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command:
+      [
+        "postgres",
+        "-c", "max_connections=200",
+        "-c", "shared_buffers=512MB",
+        "-c", "effective_cache_size=2GB",
+        "-c", "maintenance_work_mem=128MB",
+        "-c", "checkpoint_timeout=10min",
+        "-c", "max_wal_size=2GB"
+      ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ci_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: ci-pgbouncer
+    environment:
+      DATABASE_URL: "postgresql://ci_user:${DB_PASSWORD:-ci_password}@postgres:5432/competitive_intelligence"
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 1000
+      DEFAULT_POOL_SIZE: 20
+      RESERVE_POOL_SIZE: 5
+      RESERVE_POOL_TIMEOUT: 3
+      IDLE_TRANSACTION_TIMEOUT: 30
+      SERVER_IDLE_TIMEOUT: 30
+    ports:
+      - "6432:6432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "pgbouncer", "--version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: ci-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-ci_redis_pass}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: ci-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-ci_rabbit}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-ci_rabbit_pass}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  selenium-hub:
+    image: selenium/hub:4.15
+    container_name: ci-selenium-hub
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_SESSION_REQUEST_TIMEOUT: 300
+      SE_NODE_SESSION_TIMEOUT: 300
+    ports:
+      - "4444:4444"
+      - "4442:4442"
+      - "4443:4443"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  selenium-node-chrome:
+    image: selenium/node-chrome:4.15
+    container_name: ci-selenium-chrome
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_NODE_MAX_SESSIONS: 5
+      SE_NODE_SESSION_TIMEOUT: 300
+      SE_VNC_NO_PASSWORD: 1
+    depends_on:
+      - selenium-hub
+    deploy:
+      replicas: 3
+
+  selenium-node-firefox:
+    image: selenium/node-firefox:4.15
+    container_name: ci-selenium-firefox
+    environment:
+      SE_EVENT_BUS_HOST: selenium-hub
+      SE_EVENT_BUS_PUBLISH_PORT: 4442
+      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
+      SE_NODE_MAX_SESSIONS: 3
+    depends_on:
+      - selenium-hub
+    deploy:
+      replicas: 2
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: ci-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ci_user:${DB_PASSWORD:-ci_password}@pgbouncer:6432/competitive_intelligence
+      REDIS_URL: redis://:${REDIS_PASSWORD:-ci_redis_pass}@redis:6379/0
+      CELERY_BROKER_URL: amqp://ci_rabbit:${RABBITMQ_PASSWORD:-ci_rabbit_pass}@rabbitmq:5672//
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-ci_redis_pass}@redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:-change-me}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-me}
+      OTEL_EXPORTER_JAEGER_AGENT_HOST: jaeger
+      OTEL_SERVICE_NAME: competitive-intelligence-backend
+      ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      pgbouncer:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${BACKEND_HOST:-api.example.com}`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: ci-celery-worker
+    command: celery -A src.celery_app worker --loglevel=info --concurrency=8 --pool=threads -Q high-priority,low-priority
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ci_user:${DB_PASSWORD:-ci_password}@pgbouncer:6432/competitive_intelligence
+      REDIS_URL: redis://:${REDIS_PASSWORD:-ci_redis_pass}@redis:6379/0
+      CELERY_BROKER_URL: amqp://ci_rabbit:${RABBITMQ_PASSWORD:-ci_rabbit_pass}@rabbitmq:5672//
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-me}
+    depends_on:
+      - backend
+    deploy:
+      replicas: 2
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: ci-celery-beat
+    command: celery -A src.celery_app beat --loglevel=info --schedule=/tmp/celerybeat-schedule
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ci_user:${DB_PASSWORD:-ci_password}@pgbouncer:6432/competitive_intelligence
+      REDIS_URL: redis://:${REDIS_PASSWORD:-ci_redis_pass}@redis:6379/0
+      CELERY_BROKER_URL: amqp://ci_rabbit:${RABBITMQ_PASSWORD:-ci_rabbit_pass}@rabbitmq:5672//
+    depends_on:
+      - backend
+
+  frontend:
+    build: ./frontend
+    container_name: ci-frontend
+    environment:
+      VITE_API_URL: https://${BACKEND_HOST:-api.example.com}
+      VITE_WS_URL: wss://${BACKEND_HOST:-api.example.com}/ws
+    depends_on:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${FRONTEND_HOST:-ci.example.com}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: ci-jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:16686"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:v2.49
+    container_name: ci-prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+      - "--storage.tsdb.retention.time=30d"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:10.2
+    container_name: ci-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./observability/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  loki:
+    image: grafana/loki:2.9
+    container_name: ci-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./observability/loki-config.yml:/etc/loki/local-config.yaml
+      - loki_data:/data
+    ports:
+      - "3100:3100"
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  traefik_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
