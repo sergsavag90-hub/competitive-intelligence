@@ -15,11 +15,12 @@ from pathlib import Path
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 import bcrypt
+import asyncio
 
 import redis.asyncio as aioredis
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import selectinload
 
 from .models import (
@@ -212,38 +213,63 @@ class AsyncDatabaseManager:
             return result.scalar_one_or_none()
 
     async def add_or_update_product(self, competitor_id: int, product_data: Dict[str, Any]) -> Product:
-        async with self.session() as session:
-            stmt = select(Product).where(
-                Product.competitor_id == competitor_id, Product.url == product_data.get("url")
-            )
-            result = await session.execute(stmt)
-            existing = result.scalar_one_or_none()
+        """
+        Upsert product with optimistic locking and optional Redis distributed lock.
+        Retries on IntegrityError with exponential backoff.
+        """
+        url = product_data.get("url")
+        lock = None
+        if self.redis and url:
+            lock = self.redis.lock(f"product:{competitor_id}:{url}", timeout=10)
+            await lock.acquire()
 
-            if existing:
-                for key, value in product_data.items():
-                    if hasattr(existing, key):
-                        setattr(existing, key, value)
-                existing.last_seen = datetime.utcnow()
+        try:
+            backoff = [0.5, 1, 2]
+            for attempt, delay in enumerate(backoff, start=1):
+                try:
+                    async with self.session() as session:
+                        stmt = select(Product).where(
+                            Product.competitor_id == competitor_id, Product.url == url
+                        ).with_for_update()
+                        result = await session.execute(stmt)
+                        existing = result.scalar_one_or_none()
 
-                if "price" in product_data and product_data["price"] != existing.price:
-                    price_history = PriceHistory(
-                        product_id=existing.id,
-                        price=product_data["price"],
-                        old_price=product_data.get("old_price"),
-                        in_stock=product_data.get("in_stock", True),
-                    )
-                    session.add(price_history)
-                product = existing
-            else:
-                product = Product(competitor_id=competitor_id, **product_data)
-                session.add(product)
+                        if existing:
+                            for key, value in product_data.items():
+                                if hasattr(existing, key):
+                                    setattr(existing, key, value)
+                            existing.last_seen = datetime.utcnow()
 
-            await session.commit()
-            await session.refresh(product)
+                            if "price" in product_data and product_data["price"] != existing.price:
+                                price_history = PriceHistory(
+                                    product_id=existing.id,
+                                    price=product_data["price"],
+                                    old_price=product_data.get("old_price"),
+                                    in_stock=product_data.get("in_stock", True),
+                                )
+                                session.add(price_history)
+                            product = existing
+                        else:
+                            product = Product(competitor_id=competitor_id, **product_data)
+                            session.add(product)
 
-            if self.redis and product.id:
-                await self._cache_price_history(session, product.id)
-            return product
+                        await session.commit()
+                        await session.refresh(product)
+
+                        if self.redis and product.id:
+                            await self._cache_price_history(session, product.id)
+                        return product
+                except IntegrityError as exc:
+                    logger.warning("IntegrityError on product upsert (attempt %s): %s", attempt, exc)
+                    if attempt >= len(backoff):
+                        raise
+                    await asyncio.sleep(delay)
+        finally:
+            if lock:
+                try:
+                    await lock.release()
+                except Exception:
+                    pass
 
     async def get_products(self, competitor_id: int, active_only: bool = True) -> List[Product]:
         async with self.session(read_only=True) as session:

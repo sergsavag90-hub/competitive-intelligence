@@ -206,6 +206,7 @@ class Product(Base):
     __table_args__ = (UniqueConstraint("competitor_id", "url", name="uq_competitor_product_url"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    version_id: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     competitor_id: Mapped[int] = mapped_column(ForeignKey("competitors.id"), nullable=False)
     name: Mapped[str] = mapped_column(String(500), nullable=False)
     sku: Mapped[Optional[str]] = mapped_column(String(100))
@@ -236,6 +237,8 @@ class Product(Base):
     price_history: Mapped[list["PriceHistory"]] = relationship(
         back_populates="product", cascade="all, delete-orphan"
     )
+
+    __mapper_args__ = {"version_id_col": version_id}
 
 
 class PriceHistory(Base):
