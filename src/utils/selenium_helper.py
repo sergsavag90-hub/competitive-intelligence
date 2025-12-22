@@ -2,9 +2,11 @@
 Допоміжний модуль для роботи з Selenium
 """
 
+import asyncio
 import time
 import logging
 from typing import Optional, List
+from contextlib import asynccontextmanager
 
 import requests
 from requests import Session, RequestException
@@ -32,6 +34,7 @@ class SeleniumHelper:
         self._last_page_source: Optional[str] = None
         self._last_url: Optional[str] = None
         self._session: Optional[Session] = None
+        self._semaphore = asyncio.Semaphore(10)
         
     def get_driver(self) -> Optional[WebDriver]:
         """Створити та налаштувати WebDriver"""
@@ -56,6 +59,50 @@ class SeleniumHelper:
         except WebDriverException as e:
             logger.error(f"Помилка створення WebDriver: {e}")
             raise
+
+    async def _health_check(self) -> bool:
+        """Перевірка доступності Selenium Grid."""
+        try:
+            resp = requests.get(f"{self.hub_url}/status", timeout=5)
+            return resp.status_code == 200
+        except Exception:
+            return False
+
+    def _create_driver_sync(self) -> WebDriver:
+        options = self._get_browser_options()
+        driver = webdriver.Remote(
+            command_executor=self.hub_url,
+            options=options
+        )
+        driver.implicitly_wait(config.implicit_wait)
+        driver.set_page_load_timeout(min(config.page_load_timeout, 30))
+        return driver
+
+    async def _safe_quit(self, driver: WebDriver):
+        loop = asyncio.get_running_loop()
+        try:
+            await loop.run_in_executor(None, driver.quit)
+        except Exception as exc:
+            logger.debug("Error quitting driver: %s", exc)
+
+    @asynccontextmanager
+    async def driver_context(self):
+        """Async context manager з обмеженням на 10 драйверів та авто-cleanup."""
+        healthy = await self._health_check()
+        if not healthy:
+            raise RuntimeError("Selenium Grid is not healthy")
+
+        loop = asyncio.get_running_loop()
+        driver: Optional[WebDriver] = None
+        try:
+            await asyncio.wait_for(self._semaphore.acquire(), timeout=30)
+            driver = await asyncio.wait_for(loop.run_in_executor(None, self._create_driver_sync), timeout=30)
+            yield driver
+        finally:
+            if driver:
+                await self._safe_quit(driver)
+            if self._semaphore.locked():
+                self._semaphore.release()
     
     def _get_browser_options(self):
         """Отримати опції браузера"""
