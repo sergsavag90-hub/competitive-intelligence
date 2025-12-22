@@ -82,6 +82,10 @@ class SeleniumHelper:
         driver = webdriver.Remote(command_executor=endpoint, options=options)
         driver.implicitly_wait(config.implicit_wait)
         driver.set_page_load_timeout(min(config.page_load_timeout, 30))
+        try:
+            driver.set_script_timeout(10)
+        except Exception:
+            pass
         return driver
 
     def _choose_endpoint(self) -> str:

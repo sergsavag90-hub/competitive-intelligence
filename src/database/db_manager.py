@@ -66,10 +66,10 @@ class AsyncDatabaseManager:
     async def init(self) -> None:
         """Initialize engines, metadata, and Redis client."""
         self.engine = create_async_engine(
-            self.database_url, pool_pre_ping=True, pool_size=20, max_overflow=40
+            self.database_url, pool_pre_ping=True, pool_size=20, max_overflow=50
         )
         self.read_engine = (
-            create_async_engine(self.replica_url, pool_pre_ping=True, pool_size=20, max_overflow=40)
+            create_async_engine(self.replica_url, pool_pre_ping=True, pool_size=20, max_overflow=50)
             if self.replica_url
             else self.engine
         )
