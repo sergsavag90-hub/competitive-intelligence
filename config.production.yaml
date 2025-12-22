@@ -1,5 +1,5 @@
 database:
-  url: "postgresql+asyncpg://user:pass@db:5432/ci"
+  url: "postgresql+asyncpg://user:pass@pgbouncer:6432/ci"
   pool_size: 20
   max_overflow: 50
   echo: false
