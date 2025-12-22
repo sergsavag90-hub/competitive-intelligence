@@ -1,0 +1,26 @@
+database:
+  url: "postgresql+asyncpg://user:pass@db:5432/ci"
+  pool_size: 20
+  max_overflow: 50
+  echo: false
+
+redis:
+  url: "redis://redis:6379/0"
+  decode_responses: true
+
+selenium_grid:
+  hub_url: "http://selenium-hub:4444/wd/hub"
+  browser: "chrome"
+  stealth: true
+  proxy_rotation: true
+
+security:
+  jwt_secret: "${JWT_SECRET}"
+  jwt_algorithm: "HS256"
+  access_token_expire_minutes: 30
+  refresh_token_expire_days: 7
+
+monitoring:
+  otlp_endpoint: "http://otel-collector:4317"
+  metrics_port: 8000
+  service_name: "competitive-intelligence"

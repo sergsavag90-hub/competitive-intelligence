@@ -148,6 +148,17 @@ def _stream_products_csv(items: List[ProductOut]):
     return generator()
 
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+
+@app.get("/ready")
+async def ready():
+    # Could extend with DB/Redis pings; keep lightweight for probes
+    return {"status": "ready"}
+
+
 @app.get("/api/v1/competitors", response_model=List[CompetitorOut])
 async def list_competitors(user=Depends(require_role("viewer"))) -> List[CompetitorOut]:  # noqa: B008
     competitors = db.get_all_competitors(enabled_only=False)
