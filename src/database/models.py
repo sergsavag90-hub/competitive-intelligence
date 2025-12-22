@@ -1,313 +1,315 @@
 """
-Моделі бази даних для збереження даних конкурентної розвідки
+Async SQLAlchemy models with optional field-level encryption.
 """
 
+import json
+import os
+import logging
 from datetime import datetime
-from sqlalchemy import (
-    Column, Integer, String, Text, Float, Boolean, 
-    DateTime, ForeignKey, JSON, UniqueConstraint
-)
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from typing import Any, Optional
 
-Base = declarative_base()
+from cryptography.fernet import Fernet, InvalidToken
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    JSON,
+    LargeBinary,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.types import TypeDecorator
+
+logger = logging.getLogger(__name__)
+
+
+def _get_fernet() -> Fernet:
+    key = os.getenv("FERNET_KEY")
+    if not key:
+        # Fallback key only for development; real deployments must set FERNET_KEY
+        key = Fernet.generate_key()
+        logger.warning("FERNET_KEY not set; generated ephemeral key for encryption.")
+    try:
+        return Fernet(key)
+    except Exception as exc:  # pragma: no cover
+        logger.error("Invalid FERNET_KEY provided: %s", exc)
+        return Fernet(Fernet.generate_key())
+
+
+_fernet = _get_fernet()
+
+
+class EncryptedText(TypeDecorator):
+    """Encrypts text values at rest using Fernet."""
+
+    impl = LargeBinary
+    cache_ok = True
+
+    def process_bind_param(self, value: Optional[str], dialect) -> Optional[bytes]:
+        if value is None:
+            return None
+        token = _fernet.encrypt(value.encode("utf-8"))
+        return token
+
+    def process_result_value(self, value: Optional[bytes], dialect) -> Optional[str]:
+        if value is None:
+            return None
+        try:
+            return _fernet.decrypt(value).decode("utf-8")
+        except InvalidToken:
+            logger.error("Failed to decrypt text field; returning None.")
+            return None
+
+
+class EncryptedJSON(TypeDecorator):
+    """Encrypts JSON-compatible objects at rest."""
+
+    impl = LargeBinary
+    cache_ok = True
+
+    def process_bind_param(self, value: Any, dialect) -> Optional[bytes]:
+        if value is None:
+            return None
+        payload = json.dumps(value).encode("utf-8")
+        return _fernet.encrypt(payload)
+
+    def process_result_value(self, value: Optional[bytes], dialect) -> Any:
+        if value is None:
+            return None
+        try:
+            decrypted = _fernet.decrypt(value).decode("utf-8")
+            return json.loads(decrypted)
+        except InvalidToken:
+            logger.error("Failed to decrypt JSON field; returning None.")
+            return None
+
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Competitor(Base):
-    """Модель конкурента"""
-    __tablename__ = 'competitors'
-    
-    id = Column(Integer, primary_key=True)
-    name = Column(String(255), unique=True, nullable=False)
-    url = Column(String(500), nullable=False)
-    priority = Column(Integer, default=1)
-    enabled = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    seo_data = relationship("SEOData", back_populates="competitor", cascade="all, delete-orphan")
-    company_data = relationship("CompanyData", back_populates="competitor", cascade="all, delete-orphan")
-    products = relationship("Product", back_populates="competitor", cascade="all, delete-orphan")
-    promotions = relationship("Promotion", back_populates="competitor", cascade="all, delete-orphan")
-    scan_history = relationship("ScanHistory", back_populates="competitor", cascade="all, delete-orphan")
-    functional_tests = relationship("FunctionalTestResult", back_populates="competitor", cascade="all, delete-orphan") # NEW
-    
-    def __repr__(self):
-        return f"<Competitor(name='{self.name}', url='{self.url}')>"
+    __tablename__ = "competitors"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    url: Mapped[str] = mapped_column(String(500), nullable=False)
+    priority: Mapped[int] = mapped_column(Integer, default=1)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    seo_data: Mapped[list["SEOData"]] = relationship(
+        back_populates="competitor", cascade="all, delete-orphan"
+    )
+    company_data: Mapped[list["CompanyData"]] = relationship(
+        back_populates="competitor", cascade="all, delete-orphan"
+    )
+    products: Mapped[list["Product"]] = relationship(
+        back_populates="competitor", cascade="all, delete-orphan"
+    )
+    promotions: Mapped[list["Promotion"]] = relationship(
+        back_populates="competitor", cascade="all, delete-orphan"
+    )
+    scan_history: Mapped[list["ScanHistory"]] = relationship(
+        back_populates="competitor", cascade="all, delete-orphan"
+    )
+    functional_tests: Mapped[list["FunctionalTestResult"]] = relationship(
+        back_populates="competitor", cascade="all, delete-orphan"
+    )
 
 
 class ScanHistory(Base):
-    """Історія сканувань"""
-    __tablename__ = 'scan_history'
-    
-    id = Column(Integer, primary_key=True)
-    competitor_id = Column(Integer, ForeignKey('competitors.id'), nullable=False)
-    scan_type = Column(String(50))  # full, seo, products, etc.
-    status = Column(String(20))  # success, failed, partial
-    started_at = Column(DateTime, default=datetime.utcnow)
-    completed_at = Column(DateTime)
-    duration_seconds = Column(Integer)
-    items_collected = Column(Integer, default=0)
-    error_message = Column(Text)
-    metadata_json = Column("metadata", JSON)
-    
-    competitor = relationship("Competitor", back_populates="scan_history")
-    
-    def __repr__(self):
-        return f"<ScanHistory(competitor_id={self.competitor_id}, type='{self.scan_type}')>"
+    __tablename__ = "scan_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("competitors.id"), nullable=False)
+    scan_type: Mapped[Optional[str]] = mapped_column(String(50))
+    status: Mapped[Optional[str]] = mapped_column(String(20))
+    started_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    duration_seconds: Mapped[Optional[int]] = mapped_column(Integer)
+    items_collected: Mapped[int] = mapped_column(Integer, default=0)
+    error_message: Mapped[Optional[str]] = mapped_column(Text)
+    metadata_json: Mapped[dict[str, Any] | None] = mapped_column("metadata", JSON)
+
+    competitor: Mapped[Competitor] = relationship(back_populates="scan_history")
 
 
 class SEOData(Base):
-    """SEO дані сайту"""
-    __tablename__ = 'seo_data'
-    
-    id = Column(Integer, primary_key=True)
-    competitor_id = Column(Integer, ForeignKey('competitors.id'), nullable=False)
-    
-    # Meta tags
-    title = Column(String(500))
-    meta_description = Column(Text)
-    meta_keywords = Column(Text)
-    meta_robots = Column(String(100))
-    canonical_url = Column(String(500))
-    
-    # Open Graph
-    og_title = Column(String(500))
-    og_description = Column(Text)
-    og_image = Column(String(500))
-    og_type = Column(String(50))
-    
-    # Headings
-    h1_tags = Column(JSON)  # List of H1 tags
-    h2_tags = Column(JSON)  # List of H2 tags
-    h3_tags = Column(JSON)  # List of H3 tags
-    
-    # Technical SEO
-    robots_txt = Column(Text)
-    sitemap_url = Column(String(500))
-    sitemap_urls_count = Column(Integer)
-    
-    # Structured data
-    structured_data = Column(JSON)  # JSON-LD, Schema.org
-    
-    # Links analysis
-    internal_links_count = Column(Integer)
-    external_links_count = Column(Integer)
-    broken_links_count = Column(Integer)
-    
-    # Performance
-    page_load_time = Column(Float)
-    page_size_kb = Column(Integer)
-    
-    # Semantic Core Data
-    crawled_pages_count = Column(Integer, default=0)
-    semantic_core = Column(JSON) # Агреговане семантичне ядро
-    
-    collected_at = Column(DateTime, default=datetime.utcnow)
-    
-    competitor = relationship("Competitor", back_populates="seo_data")
-    
-    def __repr__(self):
-        return f"<SEOData(competitor_id={self.competitor_id}, title='{self.title}')>"
+    __tablename__ = "seo_data"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("competitors.id"), nullable=False)
+    title: Mapped[Optional[str]] = mapped_column(String(500))
+    meta_description: Mapped[Optional[str]] = mapped_column(Text)
+    meta_keywords: Mapped[Optional[str]] = mapped_column(Text)
+    meta_robots: Mapped[Optional[str]] = mapped_column(String(100))
+    canonical_url: Mapped[Optional[str]] = mapped_column(String(500))
+    og_title: Mapped[Optional[str]] = mapped_column(String(500))
+    og_description: Mapped[Optional[str]] = mapped_column(Text)
+    og_image: Mapped[Optional[str]] = mapped_column(String(500))
+    og_type: Mapped[Optional[str]] = mapped_column(String(50))
+    h1_tags: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    h2_tags: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    h3_tags: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    robots_txt: Mapped[Optional[str]] = mapped_column(Text)
+    sitemap_url: Mapped[Optional[str]] = mapped_column(String(500))
+    sitemap_urls_count: Mapped[Optional[int]] = mapped_column(Integer)
+    structured_data: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON)
+    internal_links_count: Mapped[Optional[int]] = mapped_column(Integer)
+    external_links_count: Mapped[Optional[int]] = mapped_column(Integer)
+    broken_links_count: Mapped[Optional[int]] = mapped_column(Integer)
+    page_load_time: Mapped[Optional[float]] = mapped_column(Float)
+    page_size_kb: Mapped[Optional[int]] = mapped_column(Integer)
+    crawled_pages_count: Mapped[int] = mapped_column(Integer, default=0)
+    semantic_core: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON)
+    collected_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    competitor: Mapped[Competitor] = relationship(back_populates="seo_data")
 
 
 class CompanyData(Base):
-    """Контактні дані компанії"""
-    __tablename__ = 'company_data'
-    
-    id = Column(Integer, primary_key=True)
-    competitor_id = Column(Integer, ForeignKey('competitors.id'), nullable=False)
-    
-    # Contact information
-    emails = Column(JSON)  # List of emails
-    phones = Column(JSON)  # List of phone numbers
-    addresses = Column(JSON)  # List of addresses
-    
-    # Social media
-    facebook_url = Column(String(500))
-    instagram_url = Column(String(500))
-    linkedin_url = Column(String(500))
-    twitter_url = Column(String(500))
-    youtube_url = Column(String(500))
-    telegram_url = Column(String(500))
-    
-    # Business info
-    company_name = Column(String(255))
-    legal_name = Column(String(255))
-    tax_id = Column(String(100))
-    registration_number = Column(String(100))
-    
-    # Additional
-    contact_forms = Column(JSON)  # List of contact form URLs
-    support_chat = Column(Boolean, default=False)
-    working_hours = Column(Text)
-    
-    collected_at = Column(DateTime, default=datetime.utcnow)
-    
-    competitor = relationship("Competitor", back_populates="company_data")
-    
-    def __repr__(self):
-        return f"<CompanyData(competitor_id={self.competitor_id})>"
+    __tablename__ = "company_data"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("competitors.id"), nullable=False)
+    emails: Mapped[Optional[list[str]]] = mapped_column(EncryptedJSON)
+    phones: Mapped[Optional[list[str]]] = mapped_column(EncryptedJSON)
+    addresses: Mapped[Optional[list[str]]] = mapped_column(EncryptedJSON)
+    facebook_url: Mapped[Optional[str]] = mapped_column(String(500))
+    instagram_url: Mapped[Optional[str]] = mapped_column(String(500))
+    linkedin_url: Mapped[Optional[str]] = mapped_column(String(500))
+    twitter_url: Mapped[Optional[str]] = mapped_column(String(500))
+    youtube_url: Mapped[Optional[str]] = mapped_column(String(500))
+    telegram_url: Mapped[Optional[str]] = mapped_column(String(500))
+    company_name: Mapped[Optional[str]] = mapped_column(String(255))
+    legal_name: Mapped[Optional[str]] = mapped_column(String(255))
+    tax_id: Mapped[Optional[str]] = mapped_column(String(100))
+    registration_number: Mapped[Optional[str]] = mapped_column(String(100))
+    contact_forms: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    support_chat: Mapped[bool] = mapped_column(Boolean, default=False)
+    working_hours: Mapped[Optional[str]] = mapped_column(Text)
+    collected_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    competitor: Mapped[Competitor] = relationship(back_populates="company_data")
 
 
 class Product(Base):
-    """Товар або послуга"""
-    __tablename__ = 'products'
-    
-    id = Column(Integer, primary_key=True)
-    competitor_id = Column(Integer, ForeignKey('competitors.id'), nullable=False)
-    
-    # Basic info
-    name = Column(String(500), nullable=False)
-    sku = Column(String(100))
-    url = Column(String(1000))
-    category = Column(String(255))
-    subcategory = Column(String(255))
-    
-    # Pricing
-    price = Column(Float)
-    currency = Column(String(10))
-    old_price = Column(Float)  # Для знижок
-    discount_percent = Column(Float)
-    
-    # Details
-    description = Column(Text)
-    short_description = Column(Text)
-    specifications = Column(JSON)
-    
-    # Images
-    main_image = Column(String(1000))
-    images = Column(JSON)  # List of image URLs
-    
-    # Availability
-    in_stock = Column(Boolean, default=True)
-    stock_quantity = Column(Integer)
-    available_for_order = Column(Boolean, default=True)
-    
-    # Ratings
-    rating = Column(Float)
-    reviews_count = Column(Integer)
-    
-    # Metadata
-    first_seen = Column(DateTime, default=datetime.utcnow)
-    last_seen = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    is_active = Column(Boolean, default=True)
-    
-    competitor = relationship("Competitor", back_populates="products")
-    price_history = relationship("PriceHistory", back_populates="product", cascade="all, delete-orphan")
-    
-    __table_args__ = (
-        UniqueConstraint('competitor_id', 'url', name='uq_competitor_product_url'),
+    __tablename__ = "products"
+    __table_args__ = (UniqueConstraint("competitor_id", "url", name="uq_competitor_product_url"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("competitors.id"), nullable=False)
+    name: Mapped[str] = mapped_column(String(500), nullable=False)
+    sku: Mapped[Optional[str]] = mapped_column(String(100))
+    url: Mapped[Optional[str]] = mapped_column(String(1000))
+    category: Mapped[Optional[str]] = mapped_column(String(255))
+    subcategory: Mapped[Optional[str]] = mapped_column(String(255))
+    price: Mapped[Optional[float]] = mapped_column(Float)
+    currency: Mapped[Optional[str]] = mapped_column(String(10))
+    old_price: Mapped[Optional[float]] = mapped_column(Float)
+    discount_percent: Mapped[Optional[float]] = mapped_column(Float)
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    short_description: Mapped[Optional[str]] = mapped_column(Text)
+    specifications: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON)
+    main_image: Mapped[Optional[str]] = mapped_column(String(1000))
+    images: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    in_stock: Mapped[bool] = mapped_column(Boolean, default=True)
+    stock_quantity: Mapped[Optional[int]] = mapped_column(Integer)
+    available_for_order: Mapped[bool] = mapped_column(Boolean, default=True)
+    rating: Mapped[Optional[float]] = mapped_column(Float)
+    reviews_count: Mapped[Optional[int]] = mapped_column(Integer)
+    first_seen: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    last_seen: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
     )
-    
-    def __repr__(self):
-        return f"<Product(name='{self.name}', price={self.price})>"
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    competitor: Mapped[Competitor] = relationship(back_populates="products")
+    price_history: Mapped[list["PriceHistory"]] = relationship(
+        back_populates="product", cascade="all, delete-orphan"
+    )
 
 
 class PriceHistory(Base):
-    """Історія змін цін"""
-    __tablename__ = 'price_history'
-    
-    id = Column(Integer, primary_key=True)
-    product_id = Column(Integer, ForeignKey('products.id'), nullable=False)
-    price = Column(Float, nullable=False)
-    old_price = Column(Float)
-    in_stock = Column(Boolean, default=True)
-    recorded_at = Column(DateTime, default=datetime.utcnow)
-    
-    product = relationship("Product", back_populates="price_history")
-    
-    def __repr__(self):
-        return f"<PriceHistory(product_id={self.product_id}, price={self.price})>"
+    __tablename__ = "price_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"), nullable=False)
+    price: Mapped[float] = mapped_column(Float, nullable=False)
+    old_price: Mapped[Optional[float]] = mapped_column(Float)
+    in_stock: Mapped[bool] = mapped_column(Boolean, default=True)
+    recorded_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    product: Mapped[Product] = relationship(back_populates="price_history")
 
 
 class Promotion(Base):
-    """Акції та спеціальні пропозиції"""
-    __tablename__ = 'promotions'
-    
-    id = Column(Integer, primary_key=True)
-    competitor_id = Column(Integer, ForeignKey('competitors.id'), nullable=False)
-    
-    # Basic info
-    title = Column(String(500), nullable=False)
-    description = Column(Text)
-    url = Column(String(1000))
-    
-    # Promotion details
-    promotion_type = Column(String(50))  # discount, sale, special_offer, coupon
-    discount_value = Column(Float)
-    discount_type = Column(String(20))  # percent, fixed, free_shipping
-    promo_code = Column(String(100))
-    
-    # Terms
-    terms_and_conditions = Column(Text)
-    minimum_purchase = Column(Float)
-    applicable_categories = Column(JSON)
-    
-    # Dates
-    start_date = Column(DateTime)
-    end_date = Column(DateTime)
-    is_active = Column(Boolean, default=True)
-    
-    # Image
-    image_url = Column(String(1000))
-    
-    # Metadata
-    first_seen = Column(DateTime, default=datetime.utcnow)
-    last_seen = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    competitor = relationship("Competitor", back_populates="promotions")
-    
-    def __repr__(self):
-        return f"<Promotion(title='{self.title}', type='{self.promotion_type}')>"
+    __tablename__ = "promotions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("competitors.id"), nullable=False)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    url: Mapped[Optional[str]] = mapped_column(String(1000))
+    promotion_type: Mapped[Optional[str]] = mapped_column(String(50))
+    discount_value: Mapped[Optional[float]] = mapped_column(Float)
+    discount_type: Mapped[Optional[str]] = mapped_column(String(20))
+    promo_code: Mapped[Optional[str]] = mapped_column(String(100))
+    terms_and_conditions: Mapped[Optional[str]] = mapped_column(Text)
+    minimum_purchase: Mapped[Optional[float]] = mapped_column(Float)
+    applicable_categories: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    start_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    end_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    image_url: Mapped[Optional[str]] = mapped_column(String(1000))
+    first_seen: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    last_seen: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    competitor: Mapped[Competitor] = relationship(back_populates="promotions")
 
 
 class LLMAnalysis(Base):
-    """Результати аналізу LLM"""
-    __tablename__ = 'llm_analysis'
-    
-    id = Column(Integer, primary_key=True)
-    competitor_id = Column(Integer, ForeignKey('competitors.id'))
-    analysis_type = Column(String(50))  # competitor_analysis, recommendations, etc.
-    
-    # Analysis results
-    summary = Column(Text)
-    strengths = Column(JSON)  # List of strengths
-    weaknesses = Column(JSON)  # List of weaknesses
-    opportunities = Column(JSON)  # List of opportunities
-    threats = Column(JSON)  # List of threats
-    recommendations = Column(JSON)  # List of recommendations
-    
-    # Full analysis
-    full_analysis = Column(Text)
-    
-    # Metadata
-    model_used = Column(String(50))
-    created_at = Column(DateTime, default=datetime.utcnow)
-    processing_time = Column(Float)
-    
-    def __repr__(self):
-        return f"<LLMAnalysis(type='{self.analysis_type}', competitor_id={self.competitor_id})>"
+    __tablename__ = "llm_analysis"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    competitor_id: Mapped[Optional[int]] = mapped_column(ForeignKey("competitors.id"))
+    analysis_type: Mapped[Optional[str]] = mapped_column(String(50))
+    summary: Mapped[Optional[str]] = mapped_column(Text)
+    strengths: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    weaknesses: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    opportunities: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    threats: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    recommendations: Mapped[Optional[list[str]]] = mapped_column(JSON)
+    full_analysis: Mapped[Optional[str]] = mapped_column(Text)
+    model_used: Mapped[Optional[str]] = mapped_column(String(50))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    processing_time: Mapped[Optional[float]] = mapped_column(Float)
 
 
 class FunctionalTestResult(Base):
-    """Результати функціонального тестування (реєстрація, форми)"""
-    __tablename__ = 'functional_test_results'
-    
-    id = Column(Integer, primary_key=True)
-    competitor_id = Column(Integer, ForeignKey('competitors.id'), nullable=False)
-    
-    # Test results
-    registration_status = Column(String(50)) # success, failed, skipped, error
-    registration_message = Column(Text)
-    contact_form_status = Column(String(50)) # success, failed, skipped, error
-    contact_form_message = Column(Text)
-    
-    # Metadata
-    collected_at = Column(DateTime, default=datetime.utcnow)
-    
-    competitor = relationship("Competitor", back_populates="functional_tests")
-    
-    def __repr__(self):
-        return f"<FunctionalTestResult(competitor_id={self.competitor_id}, reg_status='{self.registration_status}')>"
+    __tablename__ = "functional_test_results"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    competitor_id: Mapped[int] = mapped_column(ForeignKey("competitors.id"), nullable=False)
+    registration_status: Mapped[Optional[str]] = mapped_column(String(50))
+    registration_message: Mapped[Optional[str]] = mapped_column(Text)
+    contact_form_status: Mapped[Optional[str]] = mapped_column(String(50))
+    contact_form_message: Mapped[Optional[str]] = mapped_column(Text)
+    collected_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    competitor: Mapped[Competitor] = relationship(back_populates="functional_tests")
+
+
+# Import auth/audit models so metadata is aware
+from .user import User  # noqa: E402,F401
+from .audit import AuditLog  # noqa: E402,F401

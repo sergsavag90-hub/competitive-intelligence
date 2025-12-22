@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  semantic-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    outputs:
+      new_version: ${{ steps.semantic_release.outputs.new_release_version }}
+
+  build-and-push:
+    needs: semantic-release
+    runs-on: ubuntu-latest
+    if: needs.semantic-release.outputs.new_version != ''
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build backend image
+        run: |
+          docker build -f backend/Dockerfile -t ghcr.io/${{ github.repository_owner }}/ci-backend:${{ needs.semantic-release.outputs.new_version }} .
+          docker push ghcr.io/${{ github.repository_owner }}/ci-backend:${{ needs.semantic-release.outputs.new_version }}
+      - name: Build frontend image
+        run: |
+          docker build -f frontend/Dockerfile -t ghcr.io/${{ github.repository_owner }}/ci-frontend:${{ needs.semantic-release.outputs.new_version }} frontend
+          docker push ghcr.io/${{ github.repository_owner }}/ci-frontend:${{ needs.semantic-release.outputs.new_version }}

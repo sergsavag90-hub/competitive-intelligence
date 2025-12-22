@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  fastapi:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me}
+      - DATABASE_URL=${DATABASE_URL:-sqlite+aiosqlite:///data/competitive_intelligence.db}
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    networks:
+      - ci-net
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - fastapi
+    ports:
+      - "4173:80"
+    networks:
+      - ci-net
+
+  gateway:
+    image: nginx:alpine
+    depends_on:
+      - frontend
+      - fastapi
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    networks:
+      - ci-net
+
+  legacy:
+    container_name: competitive-intelligence-web
+    image: competitive-intelligence-intelligence-web:latest
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    networks:
+      - ci-net
+    environment:
+      - SELENIUM_HUB_URL=${SELENIUM_HUB_URL:-http://selenium-hub:4444/wd/hub}
+      - DATABASE_PATH=${DATABASE_PATH:-/data/competitive_intelligence.db}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://ollama:11434}
+    volumes:
+      - ./data:/data
+      - ./exports:/app/exports
+      - ./logs:/app/logs
+    command: python src/web/app.py
+
+networks:
+  ci-net:

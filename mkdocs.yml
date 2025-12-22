@@ -1,0 +1,31 @@
+site_name: Competitive Intelligence Docs
+site_url: https://example.com/docs
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - content.code.annotate
+    - search.suggest
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API:
+      - Authentication: api/authentication.md
+      - Competitors: api/competitors.md
+      - Scanning: api/scanning.md
+  - Guides:
+      - Writing Custom Scrapers: guides/writing-custom-scrapers.md
+      - Deploying to Proxmox: guides/deploying-to-proxmox.md
+      - ML Analytics: guides/ml-analytics.md
+  - Tutorials:
+      - Quickstart: tutorials/quickstart.md
+      - Advanced Analysis: tutorials/advanced-analysis.md
+  - Reference:
+      - Python API: reference/pydoc.md

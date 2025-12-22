@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ci-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ci-backend
+  template:
+    metadata:
+      labels:
+        app: ci-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/ORG/ci-backend:latest
+          ports:
+            - containerPort: 8000
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ci-backend
+spec:
+  selector:
+    app: ci-backend
+  ports:
+    - port: 80
+      targetPort: 8000

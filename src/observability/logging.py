@@ -1,0 +1,26 @@
+import logging
+import sys
+import structlog
+
+def configure_logging():
+    timestamper = structlog.processors.TimeStamper(fmt="iso")
+    structlog.configure(
+        processors=[
+            structlog.stdlib.filter_by_level,
+            structlog.stdlib.add_logger_name,
+            structlog.stdlib.add_log_level,
+            timestamper,
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.processors.UnicodeDecoder(),
+            structlog.processors.JSONRenderer(),
+        ],
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+    )
+    logging.basicConfig(
+        level=logging.INFO,
+        stream=sys.stdout,
+        format="%(message)s",
+    )

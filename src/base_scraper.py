@@ -7,6 +7,7 @@ for handling parallel browser sessions with robust error handling and resource m
 
 import logging
 import time
+import traceback
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
@@ -27,6 +28,9 @@ from selenium.common.exceptions import (
 )
 
 from src.utils.config import config
+from src.utils.retry_handler import build_retrying
+from src.utils.circuit_breaker import SeleniumCircuitBreaker
+from src.utils.dlq_manager import DeadLetterQueue
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -219,6 +223,10 @@ class BaseScraper(ABC):
         self.session_pool = BrowserSessionPool(self.config)
         self.executor: Optional[ThreadPoolExecutor] = None
         self._shutdown = Event()
+        self.circuit_breaker = SeleniumCircuitBreaker(threshold=5, reset_timeout=60)
+        self.dlq = DeadLetterQueue()
+        self.retrying = build_retrying(max_attempts=3)
+        self.metrics = ScraperMetrics()
         logger.info(f"Initialized {self.__class__.__name__} with config: max_workers={self.config.max_workers}")
 
     @abstractmethod
@@ -250,6 +258,7 @@ class BaseScraper(ABC):
         Returns:
             List of dictionaries containing scraped data
         """
+        self.metrics.start()
         results = []
         failed_urls = []
 
@@ -280,6 +289,7 @@ class BaseScraper(ABC):
 
         self.executor = None
 
+        self.metrics.end()
         if failed_urls:
             logger.warning(f"Failed to scrape {len(failed_urls)} URLs: {failed_urls}")
 
@@ -295,41 +305,63 @@ class BaseScraper(ABC):
         Returns:
             Dictionary containing scraped data or None if failed
         """
-        for attempt in range(self.config.max_retries):
-            if self._shutdown.is_set():
-                logger.info("Shutdown signal received, stopping retry attempts")
-                return None
+        if not self.circuit_breaker.can_execute():
+            logger.warning("Circuit breaker OPEN; skipping %s", url)
+            return None
 
+        browsers_to_try = [self.config.browser]
+        if self.config.browser == "chrome":
+            browsers_to_try.append("firefox")  # graceful fallback
+
+        for browser in browsers_to_try:
+            self.config.browser = browser
             try:
-                driver = self.session_pool.acquire_session()
-                if not driver:
-                    logger.error(f"Could not acquire browser session for {url}")
-                    return None
+                for attempt, retry_state in enumerate(self.retrying, start=1):
+                    if self._shutdown.is_set():
+                        logger.info("Shutdown signal received, stopping retry attempts")
+                        return None
+                    try:
+                        driver = self.session_pool.acquire_session()
+                        if not driver:
+                            raise WebDriverException("Could not acquire browser session")
 
-                try:
-                    logger.debug(f"Scraping {url} (attempt {attempt + 1}/{self.config.max_retries})")
-                    result = self.process_url(driver, url)
-                    result["url"] = url
-                    result["timestamp"] = datetime.utcnow().isoformat()
-                    return result
-
-                except (TimeoutException, NoSuchElementException, StaleElementReferenceException) as e:
-                    logger.warning(f"Retriable error for {url}: {type(e).__name__}")
-                    if attempt < self.config.max_retries - 1:
-                        time.sleep(self.config.retry_delay)
-                    else:
+                        with retry_state:
+                            logger.debug(f"Scraping {url} (attempt {attempt}) [{browser}]")
+                            result = self.process_url(driver, url)
+                            result["url"] = url
+                            result["timestamp"] = datetime.utcnow().isoformat()
+                            self.circuit_breaker.record_success()
+                            self.metrics.record_success()
+                            return result
+                    except (TimeoutException, NoSuchElementException, StaleElementReferenceException, WebDriverException) as e:
+                        self.circuit_breaker.record_failure()
+                        self.metrics.record_failure()
+                        logger.warning(f"Retriable error for {url}: {type(e).__name__} [{browser}]")
                         raise
+                    except Exception as e:
+                        self.circuit_breaker.record_failure()
+                        self.metrics.record_failure()
+                        trace = traceback.format_exc()
+                        self.dlq.add(
+                            {
+                                "url": url,
+                                "browser": browser,
+                                "error": str(e),
+                                "traceback": trace,
+                            }
+                        )
+                        logger.error(f"Error scraping {url}: {e}")
+                        raise
+                    finally:
+                        try:
+                            self.session_pool.release_session(driver)
+                        except Exception:
+                            pass
+            except Exception:
+                continue  # try next browser (fallback)
 
-                finally:
-                    self.session_pool.release_session(driver)
-
-            except Exception as e:
-                logger.error(f"Error scraping {url}: {e}")
-                if attempt < self.config.max_retries - 1:
-                    time.sleep(self.config.retry_delay)
-                else:
-                    return None
-
+        # If all browsers failed, record to DLQ once more
+        self.dlq.add({"url": url, "browser": "all", "error": "All retries failed"})
         return None
 
     def wait_for_element(
@@ -464,6 +496,7 @@ class ScraperMetrics:
         self.urls_processed = 0
         self.urls_failed = 0
         self.total_data_points = 0
+        self.total_retries = 0
         self.lock = Lock()
 
     def start(self) -> None:
@@ -476,16 +509,18 @@ class ScraperMetrics:
         with self.lock:
             self.end_time = datetime.utcnow()
 
-    def record_success(self, data_points: int = 1) -> None:
+    def record_success(self, data_points: int = 1, retries: int = 1) -> None:
         """Record successful scrape."""
         with self.lock:
             self.urls_processed += 1
             self.total_data_points += data_points
+            self.total_retries += max(retries, 1)
 
-    def record_failure(self) -> None:
+    def record_failure(self, retries: int = 1) -> None:
         """Record failed scrape."""
         with self.lock:
             self.urls_failed += 1
+            self.total_retries += max(retries, 1)
 
     def get_duration(self) -> Optional[timedelta]:
         """Get scraping duration."""
@@ -509,6 +544,7 @@ class ScraperMetrics:
                 "urls_failed": self.urls_failed,
                 "total_urls": self.urls_processed + self.urls_failed,
                 "total_data_points": self.total_data_points,
+                "avg_retry_count": self.total_retries / max(self.urls_processed + self.urls_failed, 1),
                 "duration_seconds": duration_seconds,
                 "urls_per_second": rate,
                 "success_rate": (

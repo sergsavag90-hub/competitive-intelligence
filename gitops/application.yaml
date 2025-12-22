@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: competitive-intelligence
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ORG/competitive-intelligence
+    targetRevision: HEAD
+    path: k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ci
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -1,0 +1,19 @@
+name: Security Scan
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 3 * * *"
+
+jobs:
+  trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Trivy
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: filesystem
+          scan-ref: .
+          severity: CRITICAL,HIGH

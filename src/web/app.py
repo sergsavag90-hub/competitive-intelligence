@@ -25,10 +25,13 @@ from src.utils.config import config  # noqa: E402
 from src.utils.price_analyzer import PriceAnalyzer  # noqa: E402
 from src.utils.change_detector import ChangeDetector  # noqa: E402
 from src.utils.llm_analyzer import LLMAnalyzer  # noqa: E402
+from src.web.auth import auth_bp, init_security  # noqa: E402
+from src.web.decorators import require_role  # noqa: E402
 from run_intelligence import CompetitiveIntelligence  # noqa: E402
 
 app = Flask(__name__)
 CORS(app)
+init_security(app)
 
 logging.basicConfig(level=getattr(logging, config.log_level.upper(), logging.INFO))
 logger = logging.getLogger(__name__)
@@ -68,6 +71,7 @@ def health():
 
 
 @app.route('/api/competitors')
+@require_role('viewer')
 def get_competitors():
     """Return list of competitors with aggregated stats."""
     competitors = db.get_all_competitors(enabled_only=False)
@@ -89,6 +93,7 @@ def get_competitors():
 
 
 @app.route('/api/competitor/<int:competitor_id>/seo')
+@require_role('viewer')
 def get_seo_data(competitor_id: int):
     """Return SEO snapshot for competitor."""
     seo_data = db.get_latest_seo_data(competitor_id)
@@ -112,6 +117,7 @@ def get_seo_data(competitor_id: int):
 
 
 @app.route('/api/competitor/<int:competitor_id>/company')
+@require_role('viewer')
 def get_company_data(competitor_id: int):
     """Return company/contact data."""
     company_data = db.get_latest_company_data(competitor_id)
@@ -135,6 +141,7 @@ def get_company_data(competitor_id: int):
 
 
 @app.route('/api/competitor/<int:competitor_id>/products')
+@require_role('viewer')
 def get_products(competitor_id: int):
     """Return products for competitor."""
     products = db.get_products(competitor_id)
@@ -154,6 +161,7 @@ def get_products(competitor_id: int):
 
 
 @app.route('/api/competitor/<int:competitor_id>/promotions')
+@require_role('viewer')
 def get_promotions(competitor_id: int):
     """Return promotions for competitor."""
     promotions = db.get_active_promotions(competitor_id)
@@ -274,6 +282,7 @@ def _run_scan_job(job_id: str, url: str, scan_type: str) -> None:
         scan_jobs[job_id] = {'status': 'failed', 'error': str(exc)}
 
 @app.route('/api/scan', methods=['POST'])
+@require_role('analyst')
 def trigger_scan():
     """Start new scan job."""
     payload = request.get_json(force=True) or {}
@@ -291,9 +300,15 @@ def trigger_scan():
     thread = Thread(target=_run_scan_job, args=(job_id, url, scan_type), daemon=True)
     thread.start()
 
+    try:
+        db.log_audit(None, "scan", url, request.remote_addr, request.user_agent.string, {"scan_type": scan_type})
+    except Exception:
+        logger.debug("Audit log failed for scan trigger.")
+
     return jsonify({'job_id': job_id})
 
 @app.route('/api/scan/<job_id>')
+@require_role('viewer')
 def scan_status(job_id: str):
     """Return status/result for scan job."""
     job = scan_jobs.get(job_id)
@@ -305,6 +320,7 @@ def scan_status(job_id: str):
 # === NEW ANALYTICS ENDPOINTS ===
 
 @app.route('/api/competitor/<int:competitor_id>/price-analysis')
+@require_role('viewer')
 def get_price_analysis(competitor_id: int):
     """Get price analysis for competitor."""
     try:
@@ -317,6 +333,7 @@ def get_price_analysis(competitor_id: int):
 
 
 @app.route('/api/competitor/<int:competitor_id>/pricing-strategy')
+@require_role('viewer')
 def get_pricing_strategy(competitor_id: int):
     """Get pricing strategy analysis."""
     try:
@@ -328,6 +345,7 @@ def get_pricing_strategy(competitor_id: int):
 
 
 @app.route('/api/price-comparison')
+@require_role('viewer')
 def get_price_comparison():
     """Compare prices across competitors."""
     try:
@@ -340,6 +358,7 @@ def get_price_comparison():
 
 
 @app.route('/api/competitor/<int:competitor_id>/price-recommendations')
+@require_role('viewer')
 def get_price_recommendations(competitor_id: int):
     """Get price optimization recommendations."""
     try:
@@ -351,6 +370,7 @@ def get_price_recommendations(competitor_id: int):
 
 
 @app.route('/api/competitor/<int:competitor_id>/changes')
+@require_role('viewer')
 def get_changes(competitor_id: int):
     """Get recent changes for competitor."""
     try:
@@ -384,6 +404,7 @@ def get_changes(competitor_id: int):
 
 
 @app.route('/api/changes-summary')
+@require_role('viewer')
 def get_changes_summary():
     """Get changes summary for all competitors."""
     try:
@@ -398,6 +419,7 @@ def get_changes_summary():
 
 
 @app.route('/api/competitor/<int:competitor_id>/swot-analysis', methods=['POST'])
+@require_role('analyst')
 def generate_swot_analysis(competitor_id: int):
     """Generate SWOT analysis using LLM."""
     try:
@@ -426,6 +448,7 @@ def generate_swot_analysis(competitor_id: int):
 
 
 @app.route('/api/competitor/<int:competitor_id>/swot-analysis')
+@require_role('viewer')
 def get_swot_analysis(competitor_id: int):
     """Get latest SWOT analysis."""
     try:
@@ -439,6 +462,7 @@ def get_swot_analysis(competitor_id: int):
 
 
 @app.route('/api/competitor/<int:competitor_id>/content-recommendations', methods=['POST'])
+@require_role('analyst')
 def generate_content_recommendations(competitor_id: int):
     """Generate content recommendations using LLM."""
     try:
@@ -466,6 +490,7 @@ def generate_content_recommendations(competitor_id: int):
 seo_jobs: Dict[str, Dict[str, Any]] = {}
 
 @app.route('/api/seo/full-analysis', methods=['POST'])
+@require_role('analyst')
 def start_full_seo_analysis():
     """Start full SEO analysis with semantic core building."""
     payload = request.get_json(force=True) or {}
@@ -520,10 +545,16 @@ def start_full_seo_analysis():
     thread = Thread(target=_run_seo_analysis, daemon=True)
     thread.start()
 
+    try:
+        db.log_audit(None, "scan", url, request.remote_addr, request.user_agent.string, {"type": "seo_full"})
+    except Exception:
+        logger.debug("Audit log failed for SEO scan.")
+
     return jsonify({'job_id': job_id})
 
 
 @app.route('/api/seo/analysis-status/<job_id>')
+@require_role('viewer')
 def get_seo_analysis_status(job_id: str):
     """Get status of SEO analysis job."""
     job = seo_jobs.get(job_id)
@@ -533,6 +564,7 @@ def get_seo_analysis_status(job_id: str):
 
 
 @app.route('/api/seo/pagination-help', methods=['POST'])
+@require_role('viewer')
 def submit_pagination_help():
     """Submit pagination help from user."""
     payload = request.get_json(force=True) or {}
