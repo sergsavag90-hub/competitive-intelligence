@@ -6,14 +6,18 @@ from uuid import uuid4
 
 from fastapi import BackgroundTasks, Depends, FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.timeout import TimeoutMiddleware
 from fastapi.responses import PlainTextResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
+import uuid
 
 from src.database.db_manager import DatabaseManager
 from backend.websockets.scan_status import ScanStatusManager
 from backend.auth import router as auth_router, jwt as jwt_ext, init_jwt
 from backend.dependencies import require_role
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from fastapi_jwt_extended import decode_token
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 
@@ -35,6 +39,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(TimeoutMiddleware, timeout=30.0)
+
+
+class RequestIdMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        request_id = str(uuid.uuid4())
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
+        return response
+
+
+app.add_middleware(RequestIdMiddleware)
 init_jwt(app)
 app.include_router(auth_router)
 FastAPIInstrumentor.instrument_app(app)
@@ -242,11 +258,25 @@ async def scan_status(job_id: str, user=Depends(require_role("viewer"))):  # noq
 
 
 @app.websocket("/ws/scan/{job_id}")
-async def websocket_scan(websocket: WebSocket, job_id: str):
+async def websocket_scan(websocket: WebSocket, job_id: str, token: str):
+    try:
+        payload = decode_token(token)
+    except Exception:
+        await websocket.close(code=1008)
+        return
+
     await scan_manager.connect(job_id, websocket)
     try:
         while True:
-            await websocket.receive_text()  # keepalive / allow client pings
+            try:
+                msg = await asyncio.wait_for(websocket.receive_text(), timeout=30)
+                if msg == "ping":
+                    await websocket.send_text("pong")
+            except asyncio.TimeoutError:
+                # keep connection alive with status push
+                status = scan_jobs.get(job_id)
+                if status:
+                    await scan_manager.broadcast(job_id, {"status": status.status, "progress": status.progress})
     except WebSocketDisconnect:
         await scan_manager.disconnect(job_id, websocket)
     except Exception:
