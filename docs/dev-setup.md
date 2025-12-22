@@ -66,6 +66,13 @@ alembic upgrade head
   npm run dev -- --port=3000 --host=0.0.0.0
   ```
 
+## Testing & scanning
+- Unit: `pytest tests/unit/ --cov=src --cov-fail-under=90`
+- Integration: `pytest tests/integration/`
+- E2E: `cd frontend && npm run test:e2e`
+- Load: `locust -f tests/load/locustfile.py --headless --users=100 --spawn-rate=10 --run-time=10m`
+- Security: `bandit -r src/`, `safety scan`, `trivy image ci-backend:latest`
+
 ## Notes
 - Flower (monitor Celery): `celery -A src.celery_app flower --port=5555`
 - Health: `curl http://localhost:8000/health`
