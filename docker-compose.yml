@@ -80,9 +80,16 @@ services:
     image: redis:7-alpine
     container_name: ci-redis
     restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    volumes:
+      - redis-data:/data
     ports:
       - "6379:6379"
-    command: ["redis-server", "--save", "", "--appendonly", "no"]
     networks:
       - selenium-grid
 
@@ -135,6 +142,7 @@ services:
 
 volumes:
   ollama-data:
+  redis-data:
 
 networks:
   selenium-grid:

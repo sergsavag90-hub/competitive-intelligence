@@ -118,9 +118,19 @@ class AsyncDatabaseManager:
             return result.scalar_one_or_none()
 
     async def get_competitor(self, competitor_id: int) -> Optional[Competitor]:
+        cache_key = f"competitor:{competitor_id}"
+        if self.redis:
+            cached = await self.redis.get(cache_key)
+            if cached:
+                data = json.loads(cached)
+                return self._deserialize_model(data, Competitor)
+
         async with self.session(read_only=True) as session:
             result = await session.execute(select(Competitor).where(Competitor.id == competitor_id))
-            return result.scalar_one_or_none()
+            comp = result.scalar_one_or_none()
+            if comp and self.redis:
+                await self.redis.setex(cache_key, 300, json.dumps(self._serialize_model(comp), default=str))
+            return comp
 
     async def get_all_competitors(self, enabled_only: bool = True) -> List[Competitor]:
         async with self.session(read_only=True) as session:
