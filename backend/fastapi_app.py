@@ -14,6 +14,7 @@ from backend.websockets.scan_status import ScanStatusManager
 from backend.auth import router as auth_router, jwt as jwt_ext, init_jwt
 from backend.dependencies import require_role
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 
 db = DatabaseManager()
@@ -36,6 +37,7 @@ app.add_middleware(
 )
 init_jwt(app)
 app.include_router(auth_router)
+FastAPIInstrumentor.instrument_app(app)
 
 
 class CompetitorOut(BaseModel):
