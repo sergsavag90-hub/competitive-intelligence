@@ -20,6 +20,48 @@ services:
       - postgres
     command: uvicorn backend.fastapi_app:app --host 0.0.0.0 --port 8000
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: ci-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - selenium-grid
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: ci-celery-worker
+    command: celery -A src.celery_app worker -Q high-priority,low-priority -l info --concurrency=4
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://user:password@postgres:5432/competitive_intel}
+    depends_on:
+      - rabbitmq
+      - redis
+      - postgres
+    networks:
+      - selenium-grid
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: ci-celery-beat
+    command: celery -A src.celery_app beat -l info
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - rabbitmq
+      - redis
+    networks:
+      - selenium-grid
+
   redis:
     image: redis:7-alpine
     container_name: ci-redis

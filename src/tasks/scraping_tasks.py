@@ -9,7 +9,14 @@ from src.scrapers.promotion_scraper import PromotionScraper
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(bind=True, max_retries=3, default_retry_delay=2, name="tasks.scrape_competitor_task")
+@celery_app.task(
+    bind=True,
+    max_retries=3,
+    default_retry_delay=2,
+    name="tasks.scrape_competitor_task",
+    acks_late=True,
+    reject_on_worker_lost=True,
+)
 def scrape_competitor_task(self, competitor_id: int, modules=None):
     """High-priority scrape task with exponential backoff."""
     modules = modules or ["seo", "company", "products", "promotions"]
