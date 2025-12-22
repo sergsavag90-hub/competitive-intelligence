@@ -53,7 +53,7 @@ def login(data: LoginRequest, response: Response):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials or locked")
 
-    claims = {"role": user.role}
+    claims = {"role": user.role, "v": getattr(user, "token_version", 0)}
     access = create_access_token(identity=user.id, additional_claims=claims)
     refresh = create_refresh_token(identity=user.id, additional_claims=claims)
     set_access_cookies(response, access)
@@ -66,7 +66,9 @@ def login(data: LoginRequest, response: Response):
 def refresh(response: Response):
     identity = get_jwt_identity()
     claims = get_jwt()
-    access = create_access_token(identity=identity, additional_claims={"role": claims.get("role")})
+    access = create_access_token(
+        identity=identity, additional_claims={"role": claims.get("role"), "v": claims.get("v", 0)}
+    )
     set_access_cookies(response, access)
     return TokenResponse(access_token=access, refresh_token="", role=claims.get("role"))
 

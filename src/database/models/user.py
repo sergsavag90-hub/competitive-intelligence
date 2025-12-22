@@ -19,5 +19,5 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     failed_attempts: Mapped[int] = mapped_column(default=0)
     lock_until: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    token_version: Mapped[int] = mapped_column(default=0, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-

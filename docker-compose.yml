@@ -1,27 +1,24 @@
 services:
-  # Веб-інтерфейс конкурентної розвідки
-  intelligence-web:
+  fastapi:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: competitive-intelligence-web
+      dockerfile: backend/Dockerfile
+    container_name: ci-fastapi
     restart: unless-stopped
     environment:
-      - SELENIUM_HUB_URL=${SELENIUM_HUB_URL:-http://selenium-hub:4444/wd/hub}
-      - DATABASE_PATH=${DATABASE_PATH:-/data/competitive_intelligence.db}
-      - OLLAMA_HOST=${OLLAMA_HOST:-http://ollama:11434}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://user:password@postgres:5432/competitive_intel}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
     ports:
-      - "5000:5000"
+      - "8000:8000"
     volumes:
-      - ./data:/data
-      - ./exports:/app/exports
       - ./logs:/app/logs
     networks:
       - selenium-grid
     depends_on:
       - selenium-hub
       - redis
-    command: python src/web/app.py
+      - postgres
+    command: uvicorn backend.fastapi_app:app --host 0.0.0.0 --port 8000
 
   redis:
     image: redis:7-alpine

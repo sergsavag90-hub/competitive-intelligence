@@ -12,12 +12,15 @@ def require_role(role: str = "viewer"):
     def dependency():
         claims = get_jwt()
         user_role = claims.get("role", "viewer")
+        token_version = claims.get("v", 0)
         if ROLE_ORDER.get(user_role, -1) < ROLE_ORDER.get(role, 0):
             raise HTTPException(status_code=403, detail="Forbidden")
         user_id = get_jwt_identity()
         user = db.get_user_by_id(user_id)
         if not user or not user.is_active:
             raise HTTPException(status_code=401, detail="Unauthorized")
+        if getattr(user, "token_version", 0) != token_version:
+            raise HTTPException(status_code=401, detail="Token expired")
         return user
 
     return Depends(dependency)
