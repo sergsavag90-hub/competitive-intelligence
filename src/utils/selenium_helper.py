@@ -5,6 +5,7 @@
 import asyncio
 import time
 import logging
+import random
 from typing import Optional, List
 from contextlib import asynccontextmanager
 
@@ -26,15 +27,19 @@ class SeleniumHelper:
     """Базовий клас для роботи з Selenium Grid"""
     
     def __init__(self, hub_url: Optional[str] = None, browser: Optional[str] = None):
+        self.provider = config.selenium_provider
         self.hub_url = hub_url or config.selenium_hub_url
         self.browser = browser or config.selenium_browser
+        self.browserless_api_key = config.selenium_browserless_api_key
+        self.browserless_region = config.selenium_browserless_region
+        self.fallback_percent = config.selenium_fallback_local_percent
         self.driver: Optional[WebDriver] = None
         self.mode = config.selenium_mode
         self.allow_requests_fallback = config.selenium_requests_fallback
         self._last_page_source: Optional[str] = None
         self._last_url: Optional[str] = None
         self._session: Optional[Session] = None
-        self._semaphore = asyncio.Semaphore(10)
+        self._semaphore = asyncio.Semaphore(config.selenium_max_concurrent)
         
     def get_driver(self) -> Optional[WebDriver]:
         """Створити та налаштувати WebDriver"""
@@ -62,6 +67,9 @@ class SeleniumHelper:
 
     async def _health_check(self) -> bool:
         """Перевірка доступності Selenium Grid."""
+        if self.provider == "browserless":
+            # Browserless manages scaling; assume available if API key exists
+            return bool(self.browserless_api_key)
         try:
             resp = requests.get(f"{self.hub_url}/status", timeout=5)
             return resp.status_code == 200
@@ -70,13 +78,29 @@ class SeleniumHelper:
 
     def _create_driver_sync(self) -> WebDriver:
         options = self._get_browser_options()
-        driver = webdriver.Remote(
-            command_executor=self.hub_url,
-            options=options
-        )
+        endpoint = self._choose_endpoint()
+        driver = webdriver.Remote(command_executor=endpoint, options=options)
         driver.implicitly_wait(config.implicit_wait)
         driver.set_page_load_timeout(min(config.page_load_timeout, 30))
         return driver
+
+    def _choose_endpoint(self) -> str:
+        """Select primary (browserless) or fallback selenium endpoint based on config."""
+        if self.provider == "browserless" and self.browserless_api_key:
+            # 0-100 scale percent routed to local fallback
+            if random.uniform(0, 100) > self.fallback_percent:
+                return self._browserless_endpoint()
+        return self.hub_url
+
+    def _browserless_endpoint(self) -> str:
+        base = self.hub_url
+        # If user did not override hub_url, derive from region
+        if "browserless" not in base:
+            base = f"https://{self.browserless_region}.browserless.io"
+        if not base.endswith("/webdriver"):
+            base = f"{base.rstrip('/')}/webdriver"
+        token = self.browserless_api_key
+        return f"{base}?token={token}"
 
     async def _safe_quit(self, driver: WebDriver):
         loop = asyncio.get_running_loop()

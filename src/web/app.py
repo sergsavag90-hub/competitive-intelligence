@@ -4,12 +4,14 @@ Flask web application for presenting competitive intelligence data.
 
 from __future__ import annotations
 
+import json
 import logging
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, Response, jsonify, render_template, request
+from flask import stream_with_context
 from flask_cors import CORS
 from threading import Thread
 from uuid import uuid4
@@ -143,21 +145,35 @@ def get_company_data(competitor_id: int):
 @app.route('/api/competitor/<int:competitor_id>/products')
 @require_role('viewer')
 def get_products(competitor_id: int):
-    """Return products for competitor."""
-    products = db.get_products(competitor_id)
-    data = [{
-        'id': product.id,
-        'name': product.name,
-        'price': product.price,
-        'currency': product.currency,
-        'url': product.url,
-        'category': product.category,
-        'in_stock': product.in_stock,
-        'main_image': product.main_image,
-        'last_seen': product.last_seen.isoformat() if product.last_seen else None,
-    } for product in products]
+    """
+    Return products for competitor with pagination + optional streaming to avoid loading all data in RAM.
+    """
+    page = max(request.args.get('page', default=1, type=int), 1)
+    size = request.args.get('size', default=100, type=int)
+    stream = str(request.args.get('stream', '0')).lower() in {'1', 'true', 'yes'}
 
-    return jsonify(data)
+    try:
+        payload = db.get_products_paginated(competitor_id, page=page, size=size)
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.exception("Failed to fetch products paginated")
+        return jsonify({'error': str(exc)}), 500
+
+    if stream and payload.get("items"):
+        def _generator():
+            yield '{"items":['
+            for idx, item in enumerate(payload["items"]):
+                if idx:
+                    yield ','
+                yield json.dumps(item, default=str)
+            yield (
+                f'],\"page\":{payload.get(\"page\", 1)},"
+                f"\"size\":{payload.get(\"size\", size)},"
+                f"\"total\":{payload.get(\"total\", 0)}}"
+            )
+
+        return Response(stream_with_context(_generator()), mimetype="application/json")
+
+    return jsonify(payload)
 
 
 @app.route('/api/competitor/<int:competitor_id>/promotions')

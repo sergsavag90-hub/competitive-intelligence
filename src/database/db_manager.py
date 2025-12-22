@@ -18,7 +18,7 @@ import bcrypt
 import asyncio
 
 import redis.asyncio as aioredis
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm import selectinload
@@ -115,6 +115,11 @@ class AsyncDatabaseManager:
     async def get_competitor_by_name(self, name: str) -> Optional[Competitor]:
         async with self.session(read_only=True) as session:
             result = await session.execute(select(Competitor).where(Competitor.name == name))
+            return result.scalar_one_or_none()
+
+    async def get_competitor(self, competitor_id: int) -> Optional[Competitor]:
+        async with self.session(read_only=True) as session:
+            result = await session.execute(select(Competitor).where(Competitor.id == competitor_id))
             return result.scalar_one_or_none()
 
     async def get_all_competitors(self, enabled_only: bool = True) -> List[Competitor]:
@@ -278,6 +283,59 @@ class AsyncDatabaseManager:
                 stmt = stmt.where(Product.is_active.is_(True))
             result = await session.execute(stmt.options(selectinload(Product.price_history)))
             return list(result.scalars().all())
+
+    async def get_price_history(self, product_id: int, days: int = 30) -> List[PriceHistory]:
+        async with self.session(read_only=True) as session:
+            cutoff = datetime.utcnow() - timedelta(days=max(days, 1))
+            stmt = (
+                select(PriceHistory)
+                .where(PriceHistory.product_id == product_id)
+                .where(PriceHistory.recorded_at >= cutoff)
+                .order_by(PriceHistory.recorded_at.desc())
+            )
+            result = await session.execute(stmt)
+            return list(result.scalars().all())
+
+    async def get_products_paginated(
+        self,
+        competitor_id: int,
+        page: int = 1,
+        size: int = 100,
+        active_only: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Paginated fetch with optional Redis caching to reduce memory pressure on large datasets.
+        """
+        page = max(page, 1)
+        size = max(1, min(size, 500))
+        cache_key = f"products:{competitor_id}:{page}:{size}:{int(active_only)}"
+        if self.redis:
+            cached = await self.redis.get(cache_key)
+            if cached:
+                return json.loads(cached)
+
+        async with self.session(read_only=True) as session:
+            base_stmt = select(Product).where(Product.competitor_id == competitor_id)
+            if active_only:
+                base_stmt = base_stmt.where(Product.is_active.is_(True))
+
+            total_stmt = select(func.count()).select_from(base_stmt.subquery())
+            total_result = await session.execute(total_stmt)
+            total = total_result.scalar_one()
+
+            stmt = (
+                base_stmt.order_by(Product.id)
+                .offset((page - 1) * size)
+                .limit(size)
+                .options(selectinload(Product.price_history))
+            )
+            result = await session.execute(stmt)
+            items = [self._serialize_model(prod) for prod in result.scalars().all()]
+
+        payload = {"items": items, "page": page, "size": size, "total": total}
+        if self.redis:
+            await self.redis.setex(cache_key, 300, json.dumps(payload, default=str))
+        return payload
 
     async def add_price_history(self, product_id: int, price: float, old_price: float | None = None) -> PriceHistory:
         async with self.session() as session:
@@ -591,6 +649,9 @@ class DatabaseManager:
     def get_competitor_by_name(self, *args, **kwargs):
         return self._run(self.backend.get_competitor_by_name(*args, **kwargs))
 
+    def get_competitor(self, *args, **kwargs):
+        return self._run(self.backend.get_competitor(*args, **kwargs))
+
     def get_all_competitors(self, *args, **kwargs):
         return self._run(self.backend.get_all_competitors(*args, **kwargs))
 
@@ -617,6 +678,12 @@ class DatabaseManager:
 
     def get_products(self, *args, **kwargs):
         return self._run(self.backend.get_products(*args, **kwargs))
+
+    def get_price_history(self, *args, **kwargs):
+        return self._run(self.backend.get_price_history(*args, **kwargs))
+
+    def get_products_paginated(self, *args, **kwargs):
+        return self._run(self.backend.get_products_paginated(*args, **kwargs))
 
     def add_price_history(self, *args, **kwargs):
         return self._run(self.backend.add_price_history(*args, **kwargs))

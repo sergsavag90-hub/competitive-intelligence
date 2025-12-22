@@ -1,5 +1,8 @@
 selenium_grid:
-  hub_url: http://192.168.1.172:4444/wd/hub
+  provider: "browserless"  # browserless | selenium
+  api_key: "${BROWSERLESS_API_KEY:-}"
+  region: "eu-west-1"
+  hub_url: http://192.168.1.172:4444/wd/hub  # fallback/local Grid
   browser: chrome
   headless: false
   mode: remote
@@ -7,6 +10,8 @@ selenium_grid:
   implicit_wait: 10
   page_load_timeout: 30
   screenshot_on_error: true
+  max_concurrent: 50
+  fallback_local_percent: 5  # % of sessions forced to local Grid
 
 targets: []
 

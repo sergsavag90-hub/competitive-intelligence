@@ -41,6 +41,26 @@ class Config:
     @property
     def selenium_hub_url(self) -> str:
         return self.get('selenium_grid.hub_url', 'http://localhost:4444/wd/hub')
+
+    @property
+    def selenium_provider(self) -> str:
+        return self.get('selenium_grid.provider', 'selenium').lower()
+
+    @property
+    def selenium_browserless_api_key(self) -> str:
+        return os.getenv("BROWSERLESS_API_KEY", self.get('selenium_grid.api_key', ''))
+
+    @property
+    def selenium_browserless_region(self) -> str:
+        return self.get('selenium_grid.region', 'eu-west-1')
+
+    @property
+    def selenium_max_concurrent(self) -> int:
+        return int(self.get('selenium_grid.max_concurrent', 10))
+
+    @property
+    def selenium_fallback_local_percent(self) -> float:
+        return float(self.get('selenium_grid.fallback_local_percent', 5))
     
     @property
     def selenium_mode(self) -> str:
