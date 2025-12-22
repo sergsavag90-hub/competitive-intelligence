@@ -1,9 +1,10 @@
-import React from "react";
+import React, { StrictMode, Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "react-query";
 import App from "./pages/App";
 import "./index.css";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
 
@@ -17,14 +18,16 @@ const theme = createTheme({
 });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+  <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <React.Suspense fallback={<div>Loading...</div>}>
-          <App />
-        </React.Suspense>
+        <AuthProvider>
+          <Suspense fallback={<div>Loading...</div>}>
+            <App />
+          </Suspense>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
-  </React.StrictMode>
+  </StrictMode>
 );
