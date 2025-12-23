@@ -1,29 +1,21 @@
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Optional
-import asyncio
-import time
 
 import bcrypt
-from fastapi import APIRouter, Depends, HTTPException, Response, Request
-from fastapi_jwt_extended import (
-    JWTManager,
-    create_access_token,
-    create_refresh_token,
-    get_jwt,
-    get_jwt_identity,
-    jwt_required,
-    set_access_cookies,
-    set_refresh_cookies,
-    unset_jwt_cookies,
-)
+from fastapi import APIRouter, HTTPException, Response
+from jose import JWTError, jwt
 from pydantic import BaseModel, EmailStr
 
 from src.database.db_manager import DatabaseManager
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 db = DatabaseManager()
-jwt = JWTManager()
+
+SECRET_KEY = os.getenv("JWT_SECRET", "dev-secret")
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ACCESS_EXPIRES = timedelta(minutes=int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")))
+REFRESH_EXPIRES = timedelta(days=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7")))
 
 
 class LoginRequest(BaseModel):
@@ -37,16 +29,32 @@ class TokenResponse(BaseModel):
     role: str
 
 
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
+def _create_token(subject: str, role: str, token_version: int, expires_delta: timedelta) -> str:
+    now = datetime.utcnow()
+    payload = {
+        "sub": subject,
+        "role": role,
+        "v": token_version,
+        "iat": now,
+        "exp": now + expires_delta,
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_token(token: str) -> Optional[dict]:
+    try:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError as exc:  # pragma: no cover - handled at call site
+        raise HTTPException(status_code=401, detail=str(exc))
+
+
 def init_jwt(app):
+    """Placeholder to keep fastapi_app wiring simple."""
     app.state.jwt_initialized = True
-    app.config = getattr(app, "config", {})
-    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "change-me")
-    app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
-    app.config["JWT_COOKIE_SECURE"] = False
-    app.config["JWT_COOKIE_CSRF_PROTECT"] = True
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
-    app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=7)
-    jwt.init_app(app)
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -55,40 +63,23 @@ def login(data: LoginRequest, response: Response):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials or locked")
 
-    claims = {"role": user.role, "v": getattr(user, "token_version", 0)}
-    access = create_access_token(identity=user.id, additional_claims=claims)
-    refresh = create_refresh_token(identity=user.id, additional_claims=claims)
-    set_access_cookies(response, access)
-    set_refresh_cookies(response, refresh)
+    access = _create_token(user.id, user.role, getattr(user, "token_version", 0), ACCESS_EXPIRES)
+    refresh = _create_token(user.id, user.role, getattr(user, "token_version", 0), REFRESH_EXPIRES)
     return TokenResponse(access_token=access, refresh_token=refresh, role=user.role)
 
 
 @router.post("/refresh", response_model=TokenResponse)
-@jwt_required(refresh=True)
-def refresh(response: Response):
-    identity = get_jwt_identity()
-    claims = get_jwt()
-    access = create_access_token(
-        identity=identity, additional_claims={"role": claims.get("role"), "v": claims.get("v", 0)}
-    )
-    set_access_cookies(response, access)
-    return TokenResponse(access_token=access, refresh_token="", role=claims.get("role"))
-
-
-@router.post("/logout")
-@jwt_required()
-def logout(response: Response):
-    claims = get_jwt()
-    jti = claims.get("jti")
-    exp = claims.get("exp", int(time.time()) + 3600)
-    ttl = max(int(exp - time.time()), 60)
-    if jti and getattr(db.backend, "redis", None):
-        asyncio.run(db.backend.redis.setex(f"blacklist:{jti}", ttl, "1"))
-    unset_jwt_cookies(response)
-    return {"msg": "logged out"}
+def refresh(payload: RefreshRequest):
+    decoded = decode_token(payload.refresh_token)
+    sub = decoded.get("sub")
+    role = decoded.get("role", "viewer")
+    version = decoded.get("v", 0)
+    new_access = _create_token(sub, role, version, ACCESS_EXPIRES)
+    new_refresh = _create_token(sub, role, version, REFRESH_EXPIRES)
+    return TokenResponse(access_token=new_access, refresh_token=new_refresh, role=role)
 
 
 @router.get("/me")
-@jwt_required()
-def me():
-    return {"sub": get_jwt_identity(), "role": get_jwt().get("role")}
+def me(token: str):
+    decoded = decode_token(token)
+    return {"sub": decoded.get("sub"), "role": decoded.get("role")}

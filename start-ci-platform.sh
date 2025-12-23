@@ -20,8 +20,9 @@ SKIP_TESTS=false
 POSTGRES_PORT=5432
 REDIS_PORT=6379
 RABBITMQ_PORT=5672
-BACKEND_PORT=8000
-FRONTEND_PORT=3000
+# Use non-conflicting defaults (8000/3000 зайняті сторонніми сервісами)
+BACKEND_PORT=8100
+FRONTEND_PORT=3500
 FLOWER_PORT=5555
 
 log() { echo -e "${GREEN}[$(date '+%Y-%m-%d %H:%M:%S')]${NC} $*" >&3; }
@@ -124,6 +125,16 @@ EOF
         info ".env вже існує, пропускаю створення..."
     fi
     mkdir -p logs/{celery,backend,frontend}
+
+    # Ensure virtual environment with dependencies
+    if [ ! -d venv ]; then
+        info "Створення Python venv..."
+        python3 -m venv venv
+    fi
+    source venv/bin/activate
+    info "Оновлення pip та встановлення залежностей..."
+    pip install --upgrade pip
+    pip install -r requirements.txt
 }
 
 start_docker_services() {
@@ -206,19 +217,25 @@ run_migrations() {
     fi
     log "Запуск Alembic міграцій..."
     source venv/bin/activate
+    if [ -f .env ]; then
+        set -a
+        source .env
+        set +a
+    fi
+    export DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://ci_user:ci_password@localhost:5432/competitive_intelligence}
     until python3 -c "import asyncio, asyncpg; asyncio.run(asyncpg.connect('postgresql://ci_user:ci_password@localhost:5432/competitive_intelligence'))" 2>/dev/null; do
         sleep 1
     done
-    alembic upgrade head
+    PYTHONPATH=. alembic upgrade head
     log "Міграції застосовано! ✅"
 }
 
 start_celery() {
     log "Запуск Celery Worker/Beat..."
     source venv/bin/activate
-    nohup celery -A src.celery_app worker --loglevel=info --concurrency=8 --pool=threads -Q high-priority,low-priority \
+    PYTHONPATH=. nohup celery -A src.celery_app worker --loglevel=info --concurrency=8 --pool=threads -Q high-priority,low-priority \
         --logfile=logs/celery/worker.log --pidfile=logs/celery/worker.pid --detach
-    nohup celery -A src.celery_app beat --loglevel=info --schedule=logs/celery/schedule.db \
+    PYTHONPATH=. nohup celery -A src.celery_app beat --loglevel=info --schedule=logs/celery/schedule.db \
         --logfile=logs/celery/beat.log --pidfile=logs/celery/beat.pid --detach
     sleep 5
     celery -A src.celery_app inspect active > /dev/null 2>&1 || warn "Celery inspect active failed"
@@ -227,9 +244,22 @@ start_celery() {
 start_backend() {
     log "Запуск FastAPI Backend..."
     source venv/bin/activate
-    check_port $BACKEND_PORT "FastAPI Backend"
-    nohup uvicorn backend.fastapi_app:app --host=0.0.0.0 --port=$BACKEND_PORT --workers=4 --log-level=info \
-        --access-log --log-config=backend/logging.yml > logs/backend/backend.log 2>&1 &
+    export DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://ci_user:ci_password@localhost:5432/competitive_intelligence}
+    export REDIS_URL=${REDIS_URL:-redis://:ci_redis_pass@localhost:6379/0}
+    local candidates=("$BACKEND_PORT" 8200 8300)
+    local port=""
+    for candidate in "${candidates[@]}"; do
+        if ! lsof -i ":${candidate}" >/dev/null 2>&1; then
+            port=$candidate
+            break
+        fi
+    done
+    if [ -z "$port" ]; then
+        error "Немає вільного порту для Backend (перевірено ${candidates[*]})"
+    fi
+    BACKEND_PORT=$port
+    PYTHONPATH=. nohup uvicorn backend.fastapi_app:app --host=0.0.0.0 --port=$BACKEND_PORT --workers=4 --log-level=info \
+        --access-log > logs/backend/backend.log 2>&1 &
     echo $! > logs/backend/backend.pid
     for i in {1..30}; do
         if curl -sf http://localhost:$BACKEND_PORT/health > /dev/null; then
@@ -243,9 +273,22 @@ start_backend() {
 
 start_frontend() {
     log "Запуск React Frontend..."
-    check_port $FRONTEND_PORT "React Frontend"
+    # Уникаємо 3000 (open-web-ui) і шукаємо далі
+    local candidates=("$FRONTEND_PORT" 3600 3700 3800 3900)
+    local port=""
+    for candidate in "${candidates[@]}"; do
+        if ! lsof -i ":${candidate}" >/dev/null 2>&1; then
+            port=$candidate
+            break
+        fi
+    done
+    if [ -z "$port" ]; then
+        error "Немає вільного порту для Frontend (перевірено 3000/3100/3200)"
+    fi
+    FRONTEND_PORT=$port
     pushd frontend >/dev/null
-    nohup npm run preview -- --port=$FRONTEND_PORT --host=0.0.0.0 > ../logs/frontend/frontend.log 2>&1 &
+    # dev server is safer than preview when dist is not built
+    nohup npm run dev -- --port=$FRONTEND_PORT --host=0.0.0.0 > ../logs/frontend/frontend.log 2>&1 &
     echo $! > ../logs/frontend/frontend.pid
     popd >/dev/null
     for i in {1..30}; do
@@ -272,6 +315,9 @@ show_status() {
     info "Health Checks:"
     curl -sf http://localhost:$BACKEND_PORT/health > /dev/null && echo "✅ Backend Health: OK" || echo "❌ Backend Health: FAILED"
     curl -sf http://localhost:$FRONTEND_PORT > /dev/null && echo "✅ Frontend: OK" || echo "❌ Frontend: FAILED"
+    echo ""
+    info "Listening ports (target set):"
+    lsof -i -P -n | grep LISTEN | grep -E '(:8000|:8100|:8200|:3000|:3100|:3200|:3300|:3400|:3500|:3600|:3700|:3800|:5432|:6379|:5672)' || true
 }
 
 stop_all() {

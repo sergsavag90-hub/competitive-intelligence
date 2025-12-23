@@ -1,0 +1,80 @@
+FERNET_KEY not set; generated ephemeral key for encryption.
+/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/opentelemetry/instrumentation/dependencies.py:4: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import (
+/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/pydantic/_internal/_config.py:383: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+INFO:     Started server process [1117265]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8100 (Press CTRL+C to quit)
+INFO:     127.0.0.1:50042 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:16530 - "OPTIONS /api/v1/auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:19694 - "POST /api/v1/auth/login HTTP/1.1" 404 Not Found
+INFO:     192.168.1.223:31926 - "POST /api/v1/auth/login HTTP/1.1" 404 Not Found
+INFO:     192.168.1.223:63041 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:63041 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:63041 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:63041 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:63041 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:63041 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:63041 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:63041 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:57258 - "OPTIONS /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:12286 - "POST /auth/login HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:12286 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:51972 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:20437 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:54410 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:14450 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:14450 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:14450 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:14450 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:14450 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:14450 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:14450 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:14450 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:14450 - "POST /auth/login HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:14450 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:14450 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:14450 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:14450 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:50801 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:48778 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:48778 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:48778 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:48778 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:48778 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:48778 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:48778 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:48778 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:65415 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:65415 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:65415 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:43015 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:62714 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:62714 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:62714 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:62714 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:62714 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:62714 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:62714 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:62714 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:62714 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:52717 - "OPTIONS /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:55457 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:59567 - "GET /health HTTP/1.1" 200 OK
+INFO:     192.168.1.223:59567 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:59567 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:59567 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:59567 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:59567 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:59567 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:35571 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:59567 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:35571 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:34304 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     192.168.1.223:34304 - "GET /api/v1/competitors HTTP/1.1" 401 Unauthorized
+INFO:     192.168.1.223:56852 - "OPTIONS /auth/refresh HTTP/1.1" 200 OK
+INFO:     192.168.1.223:34304 - "POST /auth/refresh HTTP/1.1" 422 Unprocessable Content
+INFO:     192.168.1.223:56852 - "OPTIONS /api/v1/competitors HTTP/1.1" 200 OK

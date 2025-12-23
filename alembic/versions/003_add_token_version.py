@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '003_add_token_version'
-down_revision = '002_add_auth_tables.py'
+down_revision = '002_add_auth_tables'
 branch_labels = None
 depends_on = None
 

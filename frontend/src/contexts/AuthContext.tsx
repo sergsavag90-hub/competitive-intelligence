@@ -22,6 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const stored = localStorage.getItem(TOKEN_KEY);
     if (stored) {
       setToken(stored);
+      setAuthToken(stored);
       setUser({ role: "viewer" });
     }
     setLoading(false);
@@ -36,13 +37,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setToken(tok);
         if (tok) {
           localStorage.setItem(TOKEN_KEY, tok);
+          setAuthToken(tok);
         } else {
           localStorage.removeItem(TOKEN_KEY);
+          setAuthToken(null);
         }
         setUser(usr || { role: "viewer" });
       },
       logout: () => {
         localStorage.removeItem(TOKEN_KEY);
+        setAuthToken(null);
         setToken(null);
         setUser(null);
       },
@@ -60,3 +64,4 @@ export const useAuth = (): AuthContextType => {
   }
   return ctx;
 };
+import { setAuthToken } from "../api/client";

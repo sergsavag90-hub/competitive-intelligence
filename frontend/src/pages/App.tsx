@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AppBar, Box, Button, Container, Stack, Toolbar, Typography } from "@mui/material";
 import { useCompetitorData } from "@hooks/useCompetitorData";
 import { useScanStatus } from "@hooks/useScanStatus";
@@ -102,16 +102,20 @@ function ProtectedRoute({ user, children }: { user: any; children: React.ReactNo
   return <>{children}</>;
 }
 
-const LoginPage: React.FC<{ onLogin: (token: string) => void }> = ({ onLogin }) => {
+const LoginPage: React.FC<{ onLogin: (token: string, user?: { role?: string }) => void }> = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as any)?.from || "/";
 
   const submit = async () => {
     try {
-      const { data } = await client.post<{ access_token: string }>("/auth/login", { email, password });
+      const { data } = await client.post<{ access_token: string; role?: string }>("/auth/login", { email, password });
       if (data.access_token) {
-        onLogin(data.access_token);
+        onLogin(data.access_token, { role: data.role });
+        navigate(from, { replace: true });
       }
       setError(null);
     } catch (exc: any) {

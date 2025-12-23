@@ -1,6 +1,6 @@
 import React from "react";
 import { LinearProgress, Typography, Box } from "@mui/material";
-import { ScanStatus } from "@types/api";
+import { ScanStatus } from "../types/api";
 
 type Props = {
   status: ScanStatus | null;

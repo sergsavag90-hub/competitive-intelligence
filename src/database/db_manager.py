@@ -56,7 +56,10 @@ class AsyncDatabaseManager:
 
     def __init__(self, database_url: Optional[str] = None, replica_url: Optional[str] = None):
         self.database_url = database_url or _get_database_url()
-        self.replica_url = replica_url or os.getenv("DATABASE_REPLICA_URL")
+        # Env templates may leave literal placeholders (e.g. "${DATABASE_REPLICA_URL:-}").
+        # Treat those as "unset" so SQLAlchemy doesn't try to parse them.
+        env_replica = replica_url or os.getenv("DATABASE_REPLICA_URL")
+        self.replica_url = None if env_replica and env_replica.startswith("${") else env_replica
         self.engine: Optional[AsyncEngine] = None
         self.read_engine: Optional[AsyncEngine] = None
         self.Session: Optional[async_sessionmaker[AsyncSession]] = None
@@ -618,8 +621,8 @@ class PostgresDatabaseManager(AsyncDatabaseManager):
     """PostgreSQL primary/replica manager with Redis caching."""
 
     def __init__(self):
-        database_url = os.getenv("DATABASE_URL") or config.database.get("url")
-        replica_url = os.getenv("DATABASE_REPLICA_URL") or config.database.get("replica_url")
+        database_url = os.getenv("DATABASE_URL") or config.get("database.url")
+        replica_url = os.getenv("DATABASE_REPLICA_URL") or config.get("database.replica_url")
         super().__init__(database_url=database_url, replica_url=replica_url)
 
 
@@ -629,7 +632,7 @@ class DatabaseManager:
     """
 
     def __init__(self):
-        use_postgres = (config.database.get("type") == "postgres") or os.getenv("DATABASE_URL", "").startswith(
+        use_postgres = (config.get("database.type") == "postgres") or os.getenv("DATABASE_URL", "").startswith(
             "postgresql"
         )
         if use_postgres:
@@ -640,17 +643,33 @@ class DatabaseManager:
         self._ensure_initialized()
 
     def _ensure_initialized(self) -> None:
-        if self._loop and self._loop.is_running():
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        if loop.is_running():
+            # If we're inside an active event loop (e.g., uvicorn/uvloop), schedule init asynchronously.
+            loop.create_task(self.backend.init())
+            self._loop = loop
             return
-        self._loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self._loop)
+
+        self._loop = loop
         self._loop.run_until_complete(self.backend.init())
 
     def _run(self, coro):
-        try:
-            return self._loop.run_until_complete(coro)
-        except RuntimeError:
-            return asyncio.run(coro)
+        """
+        Execute an async coroutine from sync context.
+
+        - If there's a running loop (uvicorn), schedule thread-safe and wait for result.
+        - Otherwise, drive the coroutine on the current loop.
+        """
+        loop = self._loop or asyncio.get_event_loop()
+        self._loop = loop
+        if loop.is_running():
+            return asyncio.run_coroutine_threadsafe(coro, loop).result()
+        return loop.run_until_complete(coro)
 
     # Synchronous wrappers
     def add_competitor(self, *args, **kwargs):

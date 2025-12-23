@@ -4,7 +4,8 @@ import { ColDef, IGetRowsParams, GridReadyEvent } from "ag-grid-community";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { useCompetitorPaged } from "@hooks/useCompetitorPaged";
-import { Competitor } from "@types/api";
+import client from "@api/client";
+import { Competitor } from "../types/api";
 
 type Props = {
   pageSize?: number;
@@ -13,7 +14,7 @@ type Props = {
 
 export const CompetitorTableServer: React.FC<Props> = ({ pageSize = 200, onSelect }) => {
   const gridRef = useRef<AgGridReact<Competitor>>(null);
-  const { data, isLoading, refetch } = useCompetitorPaged(0, pageSize);
+  const { isLoading } = useCompetitorPaged(0, pageSize);
 
   const columnDefs = useMemo<ColDef[]>(() => [
     { field: "name", headerName: "Name", flex: 1 },
@@ -24,16 +25,19 @@ export const CompetitorTableServer: React.FC<Props> = ({ pageSize = 200, onSelec
 
   const onGridReady = (params: GridReadyEvent) => {
     const dataSource = {
-      rowCount: data?.total ?? undefined,
+      rowCount: undefined,
       getRows: async (gridParams: IGetRowsParams) => {
         const offset = gridParams.startRow;
         const limit = gridParams.endRow - gridParams.startRow;
-        const res = await refetch({ queryKey: ["competitors-paged", offset, limit] as any, meta: { offset, limit } });
-        const items = res.data?.items ?? [];
-        gridParams.successCallback(items, res.data?.total);
+        const res = await client.get<{ items?: Competitor[]; total?: number }>("/api/v1/competitors/paged", {
+          params: { offset, limit },
+        });
+        const payload = res.data;
+        const items = payload?.items ?? [];
+        gridParams.successCallback(items, payload?.total ?? items.length);
       },
     };
-    params.api.setDatasource(dataSource);
+    (params.api as any).setDatasource(dataSource);
   };
 
   return (

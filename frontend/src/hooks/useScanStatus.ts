@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ScanStatus } from "@types/api";
+import { ScanStatus } from "../types/api";
 import { useAuth } from "../contexts/AuthContext";
 
 export const useScanStatus = (jobId?: string) => {

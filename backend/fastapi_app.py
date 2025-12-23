@@ -7,17 +7,15 @@ from uuid import uuid4
 from fastapi import BackgroundTasks, Depends, FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.timeout import TimeoutMiddleware
 from fastapi.responses import PlainTextResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
 import uuid
 
 from src.database.db_manager import DatabaseManager
 from backend.websockets.scan_status import ScanStatusManager
-from backend.auth import router as auth_router, jwt as jwt_ext, init_jwt
+from backend.auth import router as auth_router, init_jwt, decode_token
 from backend.dependencies import require_role
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-from fastapi_jwt_extended import decode_token
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 
@@ -39,8 +37,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(TimeoutMiddleware, timeout=30.0)
-
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):

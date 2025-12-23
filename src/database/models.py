@@ -12,6 +12,7 @@ from cryptography.fernet import Fernet, InvalidToken
 from sqlalchemy import (
     Boolean,
     DateTime,
+    Enum,
     Float,
     ForeignKey,
     Integer,
@@ -312,7 +313,30 @@ class FunctionalTestResult(Base):
 
     competitor: Mapped[Competitor] = relationship(back_populates="functional_tests")
 
+# --- Auth models ---
+class User(Base):
+    __tablename__ = "users"
 
-# Import auth/audit models so metadata is aware
-from .user import User  # noqa: E402,F401
-from .audit import AuditLog  # noqa: E402,F401
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    role: Mapped[str] = mapped_column(Enum("admin", "analyst", "viewer", name="user_roles"), default="viewer")
+    api_key_hash: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    failed_attempts: Mapped[int] = mapped_column(default=0)
+    lock_until: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    token_version: Mapped[int] = mapped_column(default=0, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey("users.id"), nullable=True)
+    action: Mapped[str] = mapped_column(Enum("login", "scan", "export", "delete", "access", name="audit_actions"))
+    resource: Mapped[Optional[str]] = mapped_column(String(500))
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45))
+    user_agent: Mapped[Optional[str]] = mapped_column(String(500))
+    metadata_json: Mapped[dict | None] = mapped_column("metadata", JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

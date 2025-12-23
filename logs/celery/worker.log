@@ -1,0 +1,916 @@
+[2025-12-23 01:27:35,716: WARNING/MainProcess] /root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py:508: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2025-12-23 01:27:35,723: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 2.00 seconds... (1/100)
+
+[2025-12-23 01:27:37,728: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 4.00 seconds... (2/100)
+
+[2025-12-23 01:27:41,733: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 6.00 seconds... (3/100)
+
+[2025-12-23 01:27:47,739: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 8.00 seconds... (4/100)
+
+[2025-12-23 01:27:55,747: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 10.00 seconds... (5/100)
+
+[2025-12-23 01:28:05,754: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 12.00 seconds... (6/100)
+
+[2025-12-23 01:28:17,760: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 14.00 seconds... (7/100)
+
+[2025-12-23 01:28:32,035: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 16.00 seconds... (8/100)
+
+[2025-12-23 01:28:48,043: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 18.00 seconds... (9/100)
+
+[2025-12-23 01:29:06,052: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 20.00 seconds... (10/100)
+
+[2025-12-23 01:29:26,060: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 22.00 seconds... (11/100)
+
+[2025-12-23 01:29:48,066: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 24.00 seconds... (12/100)
+
+[2025-12-23 01:30:12,077: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 26.00 seconds... (13/100)
+
+[2025-12-23 01:30:38,086: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 28.00 seconds... (14/100)
+
+[2025-12-23 01:31:06,094: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 30.00 seconds... (15/100)
+
+[2025-12-23 01:31:36,104: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:32:08,113: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:32:40,124: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:33:12,133: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:33:44,142: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:34:16,435: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:34:48,445: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:35:20,498: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:35:52,572: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:36:24,612: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:36:56,641: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:37:28,700: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:38:00,842: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:38:32,892: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:39:05,021: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:39:37,756: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:40:09,983: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:40:42,102: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:41:14,526: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:41:46,671: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:42:18,771: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:42:50,804: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:43:23,073: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:43:55,102: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:44:27,677: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:44:59,804: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:45:31,868: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:46:04,084: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:46:36,340: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:47:08,434: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:47:40,500: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:51:34,917: WARNING/MainProcess] /root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py:508: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2025-12-23 01:51:34,925: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 2.00 seconds... (1/100)
+
+[2025-12-23 01:51:36,933: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 4.00 seconds... (2/100)
+
+[2025-12-23 01:51:40,940: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 6.00 seconds... (3/100)
+
+[2025-12-23 01:51:46,959: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 8.00 seconds... (4/100)
+
+[2025-12-23 01:51:55,208: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 10.00 seconds... (5/100)
+
+[2025-12-23 01:52:05,222: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 12.00 seconds... (6/100)
+
+[2025-12-23 01:52:17,251: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 14.00 seconds... (7/100)
+
+[2025-12-23 01:52:31,340: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 16.00 seconds... (8/100)
+
+[2025-12-23 01:52:47,378: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 18.00 seconds... (9/100)
+
+[2025-12-23 01:53:05,400: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 20.00 seconds... (10/100)
+
+[2025-12-23 01:53:25,464: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 22.00 seconds... (11/100)
+
+[2025-12-23 01:53:47,473: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 24.00 seconds... (12/100)
+
+[2025-12-23 01:54:11,483: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 26.00 seconds... (13/100)
+
+[2025-12-23 01:54:37,515: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 28.00 seconds... (14/100)
+
+[2025-12-23 01:55:05,529: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 30.00 seconds... (15/100)
+
+[2025-12-23 01:55:35,849: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:56:07,904: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:56:39,932: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:57:11,947: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:57:44,089: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:58:16,211: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:58:48,602: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:59:20,631: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 01:59:52,639: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:00:24,837: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:00:57,104: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:01:29,114: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:02:01,125: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:02:33,133: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:03:05,142: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:03:37,153: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:04:09,162: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:04:41,171: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:05:13,182: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:05:45,243: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:06:17,514: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:06:49,524: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:07:21,531: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:07:53,548: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:08:25,559: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:08:57,569: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:09:29,577: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:10:01,604: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:10:33,613: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:11:05,622: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:11:37,632: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:12:09,639: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:12:41,651: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:13:13,658: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:13:45,996: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:14:18,006: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:14:50,017: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:15:22,033: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:15:54,042: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:16:26,055: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:16:58,066: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:17:30,073: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:18:02,083: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:18:34,090: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:19:06,101: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:19:38,113: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:20:10,273: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:20:42,284: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:21:14,295: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:21:46,306: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:22:18,317: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:22:50,327: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:23:22,338: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:23:54,350: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:24:26,359: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:24:58,371: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:25:30,381: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:26:02,602: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:26:34,624: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:27:06,633: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:27:38,642: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:28:10,651: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:28:42,659: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:29:14,666: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:29:46,763: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:30:18,773: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:30:50,781: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:31:22,790: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:31:54,801: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:32:26,809: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:32:58,818: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:33:30,826: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:34:02,835: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:34:34,844: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:35:06,854: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:35:38,870: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:36:10,891: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:36:42,899: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:37:14,911: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:37:46,922: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:38:18,932: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:38:50,948: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:39:22,955: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:39:54,963: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:40:26,972: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:40:58,981: CRITICAL/MainProcess] Unrecoverable error: OperationalError('[Errno -2] Name or service not known')
+Traceback (most recent call last):
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 474, in _reraise_as_library_errors
+    yield
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 461, in _ensure_connection
+    return retry_over_time(
+        self._connection_factory, self.recoverable_connection_errors,
+    ...<2 lines>...
+        callback, timeout=timeout
+    )
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/utils/functional.py", line 318, in retry_over_time
+    return fun(*args, **kwargs)
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 941, in _connection_factory
+    self._connection = self._establish_connection()
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 863, in _establish_connection
+    conn = self.transport.establish_connection()
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/transport/pyamqp.py", line 203, in establish_connection
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/amqp/connection.py", line 324, in connect
+    self.transport.connect()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/amqp/transport.py", line 132, in connect
+    self._connect(self.host, self.port, self.connect_timeout)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/amqp/transport.py", line 175, in _connect
+    entries = socket.getaddrinfo(
+        host, port, socket.AF_UNSPEC, socket.SOCK_STREAM, SOL_TCP,
+    )
+  File "/usr/lib/python3.13/socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno -2] Name or service not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+    ~~~~~~~~~~^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ~~~~~~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+    ~~~~~~~~~~~~~~~^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+    ~~~~~~~~~~^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/connection.py", line 21, in start
+    c.connection = c.connect()
+                   ~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 470, in connect
+    conn = self.connection_for_read(heartbeat=self.amqheartbeat)
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 476, in connection_for_read
+    return self.ensure_connected(
+           ~~~~~~~~~~~~~~~~~~~~~^
+        self.app.connection_for_read(heartbeat=heartbeat))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 527, in ensure_connected
+    conn = conn.ensure_connection(
+        _error_handler, self.app.conf.broker_connection_max_retries,
+        callback=maybe_shutdown,
+    )
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 408, in ensure_connection
+    self._ensure_connection(*args, **kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 460, in _ensure_connection
+    with ctx():
+         ~~~^^
+  File "/usr/lib/python3.13/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 478, in _reraise_as_library_errors
+    raise ConnectionError(str(exc)) from exc
+kombu.exceptions.OperationalError: [Errno -2] Name or service not known
+[2025-12-23 02:45:25,379: WARNING/MainProcess] /root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py:508: CPendingDeprecationWarning: The broker_connection_retry configuration setting will no longer determine
+whether broker connection retries are made during startup in Celery 6.0 and above.
+If you wish to retain the existing behavior for retrying connections on startup,
+you should set broker_connection_retry_on_startup to True.
+  warnings.warn(
+
+[2025-12-23 02:45:25,385: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 2.00 seconds... (1/100)
+
+[2025-12-23 02:45:27,389: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 4.00 seconds... (2/100)
+
+[2025-12-23 02:45:31,395: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 6.00 seconds... (3/100)
+
+[2025-12-23 02:45:37,404: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 8.00 seconds... (4/100)
+
+[2025-12-23 02:45:45,417: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 10.00 seconds... (5/100)
+
+[2025-12-23 02:45:55,423: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 12.00 seconds... (6/100)
+
+[2025-12-23 02:46:07,428: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 14.00 seconds... (7/100)
+
+[2025-12-23 02:46:21,435: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 16.00 seconds... (8/100)
+
+[2025-12-23 02:46:37,442: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 18.00 seconds... (9/100)
+
+[2025-12-23 02:46:55,450: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 20.00 seconds... (10/100)
+
+[2025-12-23 02:47:15,462: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 22.00 seconds... (11/100)
+
+[2025-12-23 02:47:37,469: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 24.00 seconds... (12/100)
+
+[2025-12-23 02:48:01,479: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 26.00 seconds... (13/100)
+
+[2025-12-23 02:48:27,488: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 28.00 seconds... (14/100)
+
+[2025-12-23 02:48:55,496: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 30.00 seconds... (15/100)
+
+[2025-12-23 02:49:25,505: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:49:57,518: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:50:29,527: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:51:01,537: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:51:33,558: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:52:05,570: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:52:37,583: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:53:09,593: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:53:41,601: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:54:13,609: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:54:45,620: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:55:17,665: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:55:49,675: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:56:21,682: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:56:53,690: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:57:25,709: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:57:57,717: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:58:29,724: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:59:01,733: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 02:59:33,744: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:00:05,754: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:00:37,762: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:01:09,771: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:01:41,779: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:02:13,788: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:02:45,796: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:03:17,805: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:03:49,814: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:04:21,822: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:04:53,844: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:05:25,980: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:05:57,988: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:06:29,996: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:07:02,006: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:07:34,027: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:08:06,042: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:08:38,063: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:09:10,074: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:09:42,100: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:10:14,114: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:10:46,271: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:11:18,280: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:11:50,297: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:12:22,305: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:12:54,314: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:13:26,323: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:13:58,332: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:14:30,340: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:15:02,349: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:15:34,358: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:16:06,366: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:16:38,374: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:17:10,381: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:17:42,389: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:18:14,398: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:18:46,535: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:19:18,544: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:19:50,551: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:20:22,573: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:20:54,582: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:21:26,594: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:21:58,602: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:22:30,610: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:23:02,618: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:23:34,627: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:24:06,636: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:24:38,649: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:25:10,669: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:25:42,677: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:26:14,686: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:26:46,700: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:27:18,828: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:27:50,865: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:28:22,925: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:28:54,935: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:29:26,943: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:29:58,953: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:30:30,962: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:31:02,970: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:31:35,069: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:32:07,082: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:32:39,238: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:33:11,248: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:33:43,256: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:34:15,265: ERROR/MainProcess] consumer: Cannot connect to amqp://guest:**@rabbitmq:5672//: [Errno -2] Name or service not known.
+Trying again in 32.00 seconds... (16/100)
+
+[2025-12-23 03:34:47,272: CRITICAL/MainProcess] Unrecoverable error: OperationalError('[Errno -2] Name or service not known')
+Traceback (most recent call last):
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 474, in _reraise_as_library_errors
+    yield
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 461, in _ensure_connection
+    return retry_over_time(
+        self._connection_factory, self.recoverable_connection_errors,
+    ...<2 lines>...
+        callback, timeout=timeout
+    )
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/utils/functional.py", line 318, in retry_over_time
+    return fun(*args, **kwargs)
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 941, in _connection_factory
+    self._connection = self._establish_connection()
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 863, in _establish_connection
+    conn = self.transport.establish_connection()
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/transport/pyamqp.py", line 203, in establish_connection
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/amqp/connection.py", line 324, in connect
+    self.transport.connect()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/amqp/transport.py", line 132, in connect
+    self._connect(self.host, self.port, self.connect_timeout)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/amqp/transport.py", line 175, in _connect
+    entries = socket.getaddrinfo(
+        host, port, socket.AF_UNSPEC, socket.SOCK_STREAM, SOL_TCP,
+    )
+  File "/usr/lib/python3.13/socket.py", line 977, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno -2] Name or service not known
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/worker.py", line 202, in start
+    self.blueprint.start(self)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+    ~~~~~~~~~~^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/bootsteps.py", line 365, in start
+    return self.obj.start()
+           ~~~~~~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 340, in start
+    blueprint.start(self)
+    ~~~~~~~~~~~~~~~^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/bootsteps.py", line 116, in start
+    step.start(parent)
+    ~~~~~~~~~~^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/connection.py", line 21, in start
+    c.connection = c.connect()
+                   ~~~~~~~~~^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 470, in connect
+    conn = self.connection_for_read(heartbeat=self.amqheartbeat)
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 476, in connection_for_read
+    return self.ensure_connected(
+           ~~~~~~~~~~~~~~~~~~~~~^
+        self.app.connection_for_read(heartbeat=heartbeat))
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/celery/worker/consumer/consumer.py", line 527, in ensure_connected
+    conn = conn.ensure_connection(
+        _error_handler, self.app.conf.broker_connection_max_retries,
+        callback=maybe_shutdown,
+    )
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 408, in ensure_connection
+    self._ensure_connection(*args, **kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 460, in _ensure_connection
+    with ctx():
+         ~~~^^
+  File "/usr/lib/python3.13/contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "/root/git/competitive-intelligence/venv/lib/python3.13/site-packages/kombu/connection.py", line 478, in _reraise_as_library_errors
+    raise ConnectionError(str(exc)) from exc
+kombu.exceptions.OperationalError: [Errno -2] Name or service not known
