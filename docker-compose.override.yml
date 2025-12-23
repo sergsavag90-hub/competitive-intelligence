@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  fastapi:
+    environment:
+      - FRONTEND_ORIGINS=${FRONTEND_ORIGINS:-http://localhost:3500,http://localhost:5173}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+    volumes:
+      - .:/app
+    command: uvicorn backend.fastapi_app:app --reload --host 0.0.0.0 --port 8100
+
+  frontend:
+    environment:
+      - VITE_API_URL=http://localhost:8100
+    ports:
+      - "3500:80"
+
+  rabbitmq:
+    ports:
+      - "5672:5672"
+      - "15672:15672"

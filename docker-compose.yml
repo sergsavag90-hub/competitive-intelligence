@@ -8,8 +8,9 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://user:password@postgres:5432/competitive_intel}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
+      - FRONTEND_ORIGINS=${FRONTEND_ORIGINS}
     ports:
-      - "8000:8000"
+      - "8100:8100"
     volumes:
       - ./logs:/app/logs
     networks:
@@ -18,15 +19,17 @@ services:
       - selenium-hub
       - redis
       - postgres
-    command: uvicorn backend.fastapi_app:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    command: uvicorn backend.fastapi_app:app --host 0.0.0.0 --port 8100
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: ci-rabbitmq
     restart: unless-stopped
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     networks:
       - selenium-grid
 
@@ -68,11 +71,12 @@ services:
     container_name: ci-frontend
     restart: unless-stopped
     environment:
-      - VITE_API_URL=http://fastapi:8000/api/v1
+      - VITE_API_URL=http://localhost:8100
     ports:
       - "3000:80"
     depends_on:
-      - fastapi
+      fastapi:
+        condition: service_healthy
     networks:
       - selenium-grid
 

@@ -1,14 +1,16 @@
 import axios from "axios";
 
-// API endpoint: use Vite env if provided, else same host on backend port 8100.
+// API endpoint: use Vite env if provided, else fall back to localhost:8100.
 const viteEnv = (import.meta as any).env || {};
-const rawBase =
-  viteEnv.VITE_API_URL ||
-  `${window.location.protocol}//${window.location.hostname}:8100`;
+const apiBase = viteEnv.VITE_API_URL || "http://localhost:8100";
 
-// Strip trailing /api/v1 if someone passed a fully-qualified API path;
-// our callers already include the /api/v1 prefix in their request URLs.
-const apiBase = rawBase.replace(/\/api\/v1\/?$/, "");
+if (import.meta?.env?.DEV) {
+  const isVersioned = /\/api(\/v1)?/.test(apiBase);
+  if (!isVersioned) {
+    // eslint-disable-next-line no-console
+    console.warn(`[api] VITE_API_URL "${apiBase}" does not include /api prefix; ensure routes include it.`);
+  }
+}
 
 const client = axios.create({
   baseURL: apiBase,
