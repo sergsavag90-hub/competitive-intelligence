@@ -1,4 +1,5 @@
 import asyncio
+import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -13,7 +14,7 @@ import uuid
 
 from src.database.db_manager import DatabaseManager
 from backend.websockets.scan_status import ScanStatusManager
-from backend.auth import router as auth_router, init_jwt, decode_token
+from backend.auth import ACCESS_COOKIE, router as auth_router, init_jwt, decode_token
 from backend.dependencies import require_role
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -30,9 +31,10 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+frontend_origins = [o.strip() for o in os.getenv("FRONTEND_ORIGINS", "http://localhost:3000,http://localhost:4173").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=frontend_origins or ["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -254,7 +256,8 @@ async def scan_status(job_id: str, user=Depends(require_role("viewer"))):  # noq
 
 
 @app.websocket("/ws/scan/{job_id}")
-async def websocket_scan(websocket: WebSocket, job_id: str, token: str):
+async def websocket_scan(websocket: WebSocket, job_id: str, token: str | None = None):
+    token = token or websocket.cookies.get(ACCESS_COOKIE)
     try:
         payload = decode_token(token)
     except Exception:

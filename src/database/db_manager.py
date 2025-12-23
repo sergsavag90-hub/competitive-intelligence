@@ -458,7 +458,8 @@ class AsyncDatabaseManager:
 
     # ---------- Auth helpers ----------
     def _hash_password(self, password: str) -> str:
-        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        rounds = int(os.getenv("BCRYPT_ROUNDS", "12"))
+        return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(rounds=rounds)).decode("utf-8")
 
     def _check_password(self, password: str, password_hash: str) -> bool:
         return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))

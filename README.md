@@ -147,6 +147,22 @@ chmod +x start-ci-platform.sh
 #    RabbitMQ: http://localhost:15672 (ci_rabbit/ci_rabbit_pass)
 ```
 
+**Швидка перевірка auth (cookies + JWT):**
+```bash
+# Реєстрація з автоматичним логіном
+curl -i -X POST http://localhost:8000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"ChangeMe123"}'
+
+# Логін (отримує access/refresh + ставить HttpOnly cookies)
+curl -i -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"ChangeMe123"}'
+
+# Рефреш токена (cookies)
+curl -i -X POST http://localhost:8000/auth/refresh
+```
+
 **Примітки:**
 - Скрипт автоматично створить `.env` файл з генерацією секретних ключів
 - Для продакшн режиму створіть `.env.production` файл

@@ -9,9 +9,11 @@ export const useScanStatus = (jobId?: string) => {
 
   useEffect(() => {
     if (!jobId) return;
-    const ws = new WebSocket(
-      `${window.location.origin.replace(/^http/, "ws")}/ws/scan/${jobId}?token=${encodeURIComponent(token || "")}`
-    );
+    const url = new URL(`${window.location.origin.replace(/^http/, "ws")}/ws/scan/${jobId}`);
+    if (token) {
+      url.searchParams.set("token", token);
+    }
+    const ws = new WebSocket(url.toString());
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);

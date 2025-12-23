@@ -28,7 +28,11 @@ client.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       try {
-        await client.post("/auth/refresh");
+        const refreshResponse = await client.post("/auth/refresh", {});
+        const newAccess = refreshResponse.data?.access_token;
+        if (newAccess) {
+          setAuthToken(newAccess);
+        }
         return client.request(error.config);
       } catch (refreshErr) {
         return Promise.reject(refreshErr);
