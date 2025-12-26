@@ -54,6 +54,11 @@ app.include_router(auth_router)
 FastAPIInstrumentor.instrument_app(app)
 
 
+@app.on_event("startup")
+async def startup_event():
+    await db.backend.init()
+
+
 class CompetitorOut(BaseModel):
     id: int
     name: str
@@ -177,7 +182,7 @@ async def ready():
 
 @app.get("/api/v1/competitors", response_model=List[CompetitorOut])
 async def list_competitors(user=Depends(require_role("viewer"))) -> List[CompetitorOut]:  # noqa: B008
-    competitors = db.get_all_competitors(enabled_only=False)
+    competitors = await db.backend.get_all_competitors(enabled_only=False)
     return [CompetitorOut.from_orm(c) for c in competitors]
 
 
@@ -187,7 +192,7 @@ async def list_competitors_paged(
     limit: int = 100,
     user=Depends(require_role("viewer")),  # noqa: B008
 ):
-    competitors = db.get_all_competitors(enabled_only=False)
+    competitors = await db.backend.get_all_competitors(enabled_only=False)
     total = len(competitors)
     sliced = competitors[offset : offset + limit]
     return PagedCompetitors(items=[CompetitorOut.from_orm(c) for c in sliced], total=total)
@@ -204,7 +209,7 @@ async def get_products(
     """
     Paginated products endpoint with optional CSV streaming. Caching happens inside db.get_products_paginated (Redis).
     """
-    payload = db.get_products_paginated(competitor_id, page=page, size=size)
+    payload = await db.backend.get_products_paginated(competitor_id, page=page, size=size)
     items = [ProductOut(**item) for item in payload.get("items", [])]
 
     if stream:
@@ -220,7 +225,7 @@ async def get_products(
 
 @app.get("/api/v1/competitors/{competitor_id}/seo", response_model=SEOResponse)
 async def get_competitor_seo(competitor_id: int, user=Depends(require_role("viewer"))):  # noqa: B008
-    seo = db.get_latest_seo_data(competitor_id)
+    seo = await db.backend.get_latest_seo_data(competitor_id)
     if not seo:
         raise HTTPException(status_code=404, detail="SEO data not found")
     return SEOResponse(

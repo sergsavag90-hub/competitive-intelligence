@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  db:
+  postgres:
     image: postgres:15
     environment:
       POSTGRES_DB: ci
@@ -15,18 +15,18 @@ services:
       timeout: 5s
       retries: 5
 
-  backend:
+  fastapi:
     build:
       context: .
       dockerfile: backend/Dockerfile
     environment:
-      DATABASE_URL: postgresql+psycopg2://ci:ci@db:5432/ci
+      DATABASE_URL: postgresql+psycopg2://ci:ci@postgres:5432/ci
       JWT_SECRET: "dev-secret"
       FRONTEND_ORIGINS: "http://localhost:4173,http://localhost:3000"
       ACCESS_TOKEN_EXPIRE_MINUTES: "15"
       REFRESH_TOKEN_EXPIRE_DAYS: "7"
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
     ports:
       - "8000:8000"
@@ -38,6 +38,6 @@ services:
     environment:
       VITE_API_URL: "http://localhost:8000"
     depends_on:
-      - backend
+      - fastapi
     ports:
       - "4173:80"

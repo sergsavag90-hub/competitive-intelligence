@@ -68,6 +68,8 @@ class AsyncDatabaseManager:
 
     async def init(self) -> None:
         """Initialize engines, metadata, and Redis client."""
+        if self.engine:
+            return
         self.engine = create_async_engine(
             self.database_url, pool_pre_ping=True, pool_size=20, max_overflow=50
         )
