@@ -63,7 +63,7 @@ redis:
   enable_cache: true
 
 ollama:
-  enabled: true
+  enabled: false
   model: llama3.2
   host: http://localhost:11434
   temperature: 0.7

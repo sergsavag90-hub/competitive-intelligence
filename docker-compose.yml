@@ -19,16 +19,21 @@ services:
       - selenium-hub
       - redis
       - postgres
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
     command: uvicorn backend.fastapi_app:app --host 0.0.0.0 --port 8100
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: ci-rabbitmq
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     restart: unless-stopped
     networks:
       - selenium-grid
@@ -38,7 +43,12 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     container_name: ci-celery-worker
-    command: celery -A src.celery_app worker -Q high-priority,low-priority -l info --concurrency=4
+    command: celery -A src.celery_app worker -Q high-priority,low-priority -l info --concurrency=2
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2G
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -56,6 +66,11 @@ services:
       dockerfile: backend/Dockerfile
     container_name: ci-celery-beat
     command: celery -A src.celery_app beat -l info
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -74,6 +89,11 @@ services:
       - VITE_API_URL=http://localhost:8100
     ports:
       - "3000:80"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 256M
     depends_on:
       fastapi:
         condition: service_healthy
@@ -83,6 +103,11 @@ services:
   redis:
     image: redis:7-alpine
     container_name: ci-redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 256M
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
@@ -98,23 +123,24 @@ services:
       - selenium-grid
 
   # Ollama для LLM аналізу (опціонально)
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama-intelligence
-    restart: unless-stopped
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-    networks:
-      - selenium-grid
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+  # Ollama service disabled for minimum hardware requirements
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama-intelligence
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama-data:/root/.ollama
+  #   networks:
+  #     - selenium-grid
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
 
   # Cron для автоматичного сканування
   intelligence-cron:

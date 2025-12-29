@@ -2,6 +2,11 @@ services:
   selenium-hub:
     image: selenium/hub:4.1.2-20220131
     container_name: selenium-hub
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     ports:
       - "4444:4444"
     environment:
@@ -14,6 +19,11 @@ services:
     image: selenium/node-chrome:4.1.2-20220131
     container_name: selenium-node-chrome
     shm_size: 2gb
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
     depends_on:
       - selenium-hub
     environment:
