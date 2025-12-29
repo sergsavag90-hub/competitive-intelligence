@@ -6,7 +6,7 @@ services:
     container_name: ci-fastapi
     restart: unless-stopped
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://user:password@postgres:5432/competitive_intel}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://user:password@postgres:5432/competitive_intelligence}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
       - FRONTEND_ORIGINS=${FRONTEND_ORIGINS}
     ports:
@@ -42,7 +42,7 @@ services:
     environment:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://user:password@postgres:5432/competitive_intel}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://user:password@postgres:5432/competitive_intelligence}
     depends_on:
       - rabbitmq
       - redis

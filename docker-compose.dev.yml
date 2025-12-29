@@ -16,8 +16,6 @@ services:
       [
         "postgres",
         "-c",
-        "unix_socket_directories=",
-        "-c",
         "max_connections=200",
         "-c",
         "shared_buffers=512MB"
