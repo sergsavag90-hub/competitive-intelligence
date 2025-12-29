@@ -1,5 +1,15 @@
 .env
+.env.*
+!.env.template
 .venv
+venv
 node_modules
 dist
 __pycache__/
+*.log
+logs/
+data/
+exports/
+.DS_Store
+.idea/
+.vscode/
